@@ -51,11 +51,12 @@ app.get('/api/data', (req, res) => {
 // POST /api/data - save all data
 app.post('/api/data', (req, res) => {
     try {
-        const { personnel, customColumns, activities } = req.body;
+        const { personnel, customColumns, activities, columnConfig } = req.body;
         const data = {
             personnel: personnel || [],
             customColumns: customColumns || [],
-            activities: activities || []
+            activities: activities || [],
+            columnConfig: columnConfig || null
         };
         fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
         res.json({ ok: true });

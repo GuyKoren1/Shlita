@@ -81,12 +81,22 @@ const FIXED_COLUMNS = [
     { key: 'personalId', label: 'מס אישי', type: 'text' }
 ];
 
+const DEFAULT_COLUMN_CONFIG = [
+    { key: 'name', label: 'שם', isPrimary: true, isFilter: false },
+    { key: 'rank', label: 'דרגה', isPrimary: false, isFilter: true },
+    { key: 'profession', label: 'מקצוע', isPrimary: false, isFilter: true },
+    { key: 'team', label: 'צוות', isPrimary: false, isFilter: true },
+    { key: 'department', label: 'מחלקה', isPrimary: false, isFilter: true },
+    { key: 'personalId', label: 'מס אישי', isPrimary: false, isFilter: false }
+];
+
 // ==================== State ====================
 let state = {
     accessLevel: null, // 'admin' or 'viewer'
     personnel: [],
     customColumns: [],
     activities: [],
+    columnConfig: null, // dynamic column config (null = use default)
     sortColumn: null,
     sortDirection: 'asc',
     editingCell: null,
@@ -150,6 +160,7 @@ async function loadState() {
             state.personnel = data.personnel || [];
             state.customColumns = data.customColumns || [];
             state.activities = data.activities || [];
+            state.columnConfig = data.columnConfig || null;
             return;
         }
     } catch (err) {
@@ -162,6 +173,7 @@ async function loadState() {
         state.personnel = parsed.personnel || [];
         state.customColumns = parsed.customColumns || [];
         state.activities = parsed.activities || [];
+        state.columnConfig = parsed.columnConfig || null;
     }
 }
 
@@ -176,7 +188,8 @@ async function _saveStateNow() {
     const payload = {
         personnel: state.personnel,
         customColumns: state.customColumns,
-        activities: state.activities
+        activities: state.activities,
+        columnConfig: state.columnConfig
     };
     try {
         const res = await fetch('/api/data', {
@@ -264,52 +277,55 @@ function switchView(viewName) {
 
 // ==================== Filters ====================
 function populateFilters() {
-    const ranks = [...new Set(state.personnel.map(p => p.rank).filter(Boolean))].sort();
-    const professions = [...new Set(state.personnel.map(p => p.profession).filter(Boolean))].sort();
-    const teams = [...new Set(state.personnel.map(p => p.team).filter(Boolean))].sort();
-    const departments = [...new Set(state.personnel.map(p => p.department).filter(Boolean))].sort();
+    const config = getColumnConfig();
+    const filterColumns = config.filter(c => c.isFilter);
 
-    populateSelect('filterRank', ranks, 'כל הדרגות');
-    populateSelect('filterProfession', professions, 'כל המקצועות');
-    populateSelect('filterTeam', teams, 'כל הצוותים');
-    populateSelect('filterDepartment', departments, 'כל המחלקות');
-
-    // Activity modal filters
-    populateSelect('actFilterRank', ranks, 'כל הדרגות');
-    populateSelect('actFilterProfession', professions, 'כל המקצועות');
-    populateSelect('actFilterTeam', teams, 'כל הצוותים');
-    populateSelect('actFilterDepartment', departments, 'כל המחלקות');
-
-    // Person rank select
-    const rankSelect = document.getElementById('personRank');
-    rankSelect.innerHTML = '<option value="">בחר דרגה</option>';
-    ranks.forEach(r => {
-        rankSelect.innerHTML += `<option value="${r}">${r}</option>`;
+    // Build main filters container
+    const mainContainer = document.getElementById('filtersContainer');
+    let mainHtml = '<div class="filter-group"><input type="text" id="searchInput" placeholder="חיפוש חופשי..." oninput="applyFilters()"></div>';
+    filterColumns.forEach(col => {
+        const values = [...new Set(state.personnel.map(p => p[col.key]).filter(Boolean))].sort();
+        mainHtml += `<div class="filter-group"><select id="filter_${col.key}" onchange="applyFilters()">`;
+        mainHtml += `<option value="">כל ${col.label}</option>`;
+        values.forEach(v => { mainHtml += `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`; });
+        mainHtml += `</select></div>`;
     });
+    mainHtml += '<button class="btn btn-ghost" onclick="clearFilters()">נקה סינון</button>';
+    mainHtml += '<span id="personnelCount" class="count-badge"></span>';
+    mainContainer.innerHTML = mainHtml;
+
+    // Build activity modal filters container
+    const actContainer = document.getElementById('actFiltersContainer');
+    let actHtml = '<div class="filter-group"><input type="text" id="actSearchInput" placeholder="חיפוש..." oninput="filterActivityParticipants()"></div>';
+    filterColumns.forEach(col => {
+        const values = [...new Set(state.personnel.map(p => p[col.key]).filter(Boolean))].sort();
+        actHtml += `<div class="filter-group"><select id="actFilter_${col.key}" onchange="filterActivityParticipants()">`;
+        actHtml += `<option value="">כל ${col.label}</option>`;
+        values.forEach(v => { actHtml += `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`; });
+        actHtml += `</select></div>`;
+    });
+    actContainer.innerHTML = actHtml;
 }
 
-function populateSelect(id, values, defaultLabel) {
-    const select = document.getElementById(id);
-    const currentVal = select.value;
-    select.innerHTML = `<option value="">${defaultLabel}</option>`;
-    values.forEach(v => {
-        select.innerHTML += `<option value="${v}">${v}</option>`;
-    });
-    select.value = currentVal;
-}
+
 
 function getFilteredPersonnel() {
-    const search = document.getElementById('searchInput').value.toLowerCase();
-    const rank = document.getElementById('filterRank').value;
-    const profession = document.getElementById('filterProfession').value;
-    const team = document.getElementById('filterTeam').value;
-    const department = document.getElementById('filterDepartment').value;
+    const searchEl = document.getElementById('searchInput');
+    const search = searchEl ? searchEl.value.toLowerCase() : '';
+    const config = getColumnConfig();
+    const filterColumns = config.filter(c => c.isFilter);
+
+    // Collect active filter values
+    const activeFilters = [];
+    filterColumns.forEach(col => {
+        const el = document.getElementById('filter_' + col.key);
+        if (el && el.value) activeFilters.push({ key: col.key, value: el.value });
+    });
 
     return state.personnel.filter(p => {
-        if (rank && p.rank !== rank) return false;
-        if (profession && p.profession !== profession) return false;
-        if (team && p.team !== team) return false;
-        if (department && p.department !== department) return false;
+        for (const f of activeFilters) {
+            if (p[f.key] !== f.value) return false;
+        }
         if (search) {
             const allValues = Object.values(p).join(' ').toLowerCase();
             if (!allValues.includes(search)) return false;
@@ -323,17 +339,34 @@ function applyFilters() {
 }
 
 function clearFilters() {
-    document.getElementById('searchInput').value = '';
-    document.getElementById('filterRank').value = '';
-    document.getElementById('filterProfession').value = '';
-    document.getElementById('filterTeam').value = '';
-    document.getElementById('filterDepartment').value = '';
+    const searchEl = document.getElementById('searchInput');
+    if (searchEl) searchEl.value = '';
+    const config = getColumnConfig();
+    config.filter(c => c.isFilter).forEach(col => {
+        const el = document.getElementById('filter_' + col.key);
+        if (el) el.value = '';
+    });
     renderPersonnelTable();
 }
 
 // ==================== Personnel Table ====================
+function getColumnConfig() {
+    return state.columnConfig || DEFAULT_COLUMN_CONFIG;
+}
+
 function getAllColumns() {
-    return [...FIXED_COLUMNS, ...state.customColumns];
+    const config = getColumnConfig();
+    // Map columnConfig entries to column objects (with type 'text' for table rendering)
+    const cols = config.map(c => ({ key: c.key, label: c.label, type: 'text' }));
+    // Also append any legacy custom columns not in config
+    if (!state.columnConfig) {
+        state.customColumns.forEach(cc => {
+            if (!cols.find(c => c.key === cc.key)) {
+                cols.push(cc);
+            }
+        });
+    }
+    return cols;
 }
 
 function renderPersonnelTable() {
@@ -451,6 +484,28 @@ function finishCellEdit(input) {
 }
 
 // ==================== Add/Edit Person ====================
+function renderPersonFormFields(person = null) {
+    const container = document.getElementById('personFormFields');
+    const columns = getAllColumns();
+    let html = '';
+
+    for (let i = 0; i < columns.length; i += 2) {
+        html += '<div class="form-row">';
+        for (let j = i; j < Math.min(i + 2, columns.length); j++) {
+            const col = columns[j];
+            const val = person ? (person[col.key] || '') : '';
+            const config = getColumnConfig();
+            const isPrimary = config.find(c => c.key === col.key)?.isPrimary;
+            html += `<div class="form-group">
+                <label>${escapeHtml(col.label)}</label>
+                <input type="text" id="field_${col.key}" value="${escapeHtml(val)}" ${isPrimary ? 'required' : ''}>
+            </div>`;
+        }
+        html += '</div>';
+    }
+    container.innerHTML = html;
+}
+
 function openAddPersonModal() {
     if (state.accessLevel !== 'admin') {
         showToast('אין הרשאה לביצוע פעולה זו');
@@ -458,8 +513,7 @@ function openAddPersonModal() {
     }
     state.editingPersonIndex = null;
     document.getElementById('addPersonModalTitle').textContent = 'הוסף איש חדש';
-    clearPersonForm();
-    renderCustomFieldsInForm();
+    renderPersonFormFields();
     openModal('addPersonModal');
 }
 
@@ -469,98 +523,33 @@ function openEditPersonModal(idx) {
     const person = state.personnel[idx];
 
     document.getElementById('addPersonModalTitle').textContent = 'ערוך פרטים';
-    document.getElementById('personName').value = person.name || '';
-    document.getElementById('personRank').value = person.rank || '';
-    document.getElementById('personProfession').value = person.profession || '';
-    document.getElementById('personTeam').value = person.team || '';
-    document.getElementById('personDepartment').value = person.department || '';
-    document.getElementById('personId').value = person.personalId || '';
-
-    renderCustomFieldsInForm(person);
+    renderPersonFormFields(person);
     openModal('addPersonModal');
 }
 
-function clearPersonForm() {
-    document.getElementById('personName').value = '';
-    document.getElementById('personRank').value = '';
-    document.getElementById('personProfession').value = '';
-    document.getElementById('personTeam').value = '';
-    document.getElementById('personDepartment').value = '';
-    document.getElementById('personId').value = '';
-}
-
-function renderCustomFieldsInForm(person = null) {
-    const container = document.getElementById('customFieldsContainer');
-    if (state.customColumns.length === 0) {
-        container.innerHTML = '';
-        return;
-    }
-
-    let html = '<hr><h4>שדות נוספים</h4>';
-    const pairs = [];
-    state.customColumns.forEach((col, i) => {
-        pairs.push(col);
-    });
-
-    for (let i = 0; i < pairs.length; i += 2) {
-        html += '<div class="form-row">';
-        for (let j = i; j < Math.min(i + 2, pairs.length); j++) {
-            const col = pairs[j];
-            const val = person ? (person[col.key] || '') : '';
-            html += `<div class="form-group">
-                <label>${col.label}</label>`;
-            if (col.type === 'boolean') {
-                html += `<select id="custom_${col.key}">
-                    <option value="" ${!val ? 'selected' : ''}>-</option>
-                    <option value="כן" ${val === 'כן' ? 'selected' : ''}>כן</option>
-                    <option value="לא" ${val === 'לא' ? 'selected' : ''}>לא</option>
-                </select>`;
-            } else if (col.type === 'date') {
-                html += `<input type="date" id="custom_${col.key}" value="${val}">`;
-            } else if (col.type === 'number') {
-                html += `<input type="number" id="custom_${col.key}" value="${val}">`;
-            } else {
-                html += `<input type="text" id="custom_${col.key}" value="${escapeHtml(val)}">`;
-            }
-            html += '</div>';
-        }
-        html += '</div>';
-    }
-    container.innerHTML = html;
-}
-
 function savePerson() {
-    const name = document.getElementById('personName').value.trim();
-    if (!name) {
-        showToast('יש להזין שם');
+    const columns = getAllColumns();
+    const config = getColumnConfig();
+    const primaryCol = config.find(c => c.isPrimary) || config[0];
+
+    const primaryEl = document.getElementById('field_' + primaryCol.key);
+    if (!primaryEl || !primaryEl.value.trim()) {
+        showToast(`יש להזין ${primaryCol.label}`);
         return;
     }
 
-    const personData = {
-        name,
-        rank: document.getElementById('personRank').value,
-        profession: document.getElementById('personProfession').value.trim(),
-        team: document.getElementById('personTeam').value.trim(),
-        department: document.getElementById('personDepartment').value.trim(),
-        personalId: document.getElementById('personId').value.trim()
-    };
-
-    // Custom fields
-    state.customColumns.forEach(col => {
-        const el = document.getElementById('custom_' + col.key);
-        if (el) personData[col.key] = el.value;
+    const personData = {};
+    columns.forEach(col => {
+        const el = document.getElementById('field_' + col.key);
+        if (el) personData[col.key] = el.value.trim();
     });
 
     if (state.editingPersonIndex !== null) {
-        // Edit existing
         const existing = state.personnel[state.editingPersonIndex];
         Object.assign(existing, personData);
         showToast('פרטים עודכנו בהצלחה');
     } else {
-        // Add new
         personData.id = generateId();
-        personData.weaponId = '';
-        personData.notes = '';
         state.personnel.push(personData);
         showToast('איש חדש נוסף בהצלחה');
     }
@@ -621,29 +610,34 @@ function openNewActivityModal() {
     document.getElementById('activityDescription').value = '';
     document.getElementById('activityDeadline').value = '';
 
-    // Reset filters
-    document.getElementById('actSearchInput').value = '';
-    document.getElementById('actFilterRank').value = '';
-    document.getElementById('actFilterProfession').value = '';
-    document.getElementById('actFilterTeam').value = '';
-    document.getElementById('actFilterDepartment').value = '';
+    // Reset dynamic filters
+    const actSearch = document.getElementById('actSearchInput');
+    if (actSearch) actSearch.value = '';
+    getColumnConfig().filter(c => c.isFilter).forEach(col => {
+        const el = document.getElementById('actFilter_' + col.key);
+        if (el) el.value = '';
+    });
 
     renderActivityParticipants();
     openModal('newActivityModal');
 }
 
 function getActivityFilteredPersonnel() {
-    const search = document.getElementById('actSearchInput').value.toLowerCase();
-    const rank = document.getElementById('actFilterRank').value;
-    const profession = document.getElementById('actFilterProfession').value;
-    const team = document.getElementById('actFilterTeam').value;
-    const department = document.getElementById('actFilterDepartment').value;
+    const searchEl = document.getElementById('actSearchInput');
+    const search = searchEl ? searchEl.value.toLowerCase() : '';
+    const config = getColumnConfig();
+    const filterColumns = config.filter(c => c.isFilter);
+
+    const activeFilters = [];
+    filterColumns.forEach(col => {
+        const el = document.getElementById('actFilter_' + col.key);
+        if (el && el.value) activeFilters.push({ key: col.key, value: el.value });
+    });
 
     return state.personnel.filter(p => {
-        if (rank && p.rank !== rank) return false;
-        if (profession && p.profession !== profession) return false;
-        if (team && p.team !== team) return false;
-        if (department && p.department !== department) return false;
+        for (const f of activeFilters) {
+            if (p[f.key] !== f.value) return false;
+        }
         if (search) {
             const allValues = Object.values(p).join(' ').toLowerCase();
             if (!allValues.includes(search)) return false;
@@ -660,14 +654,19 @@ function renderActivityParticipants() {
     const container = document.getElementById('participantsList');
 
     let html = '';
+    const config = getColumnConfig();
+    const primaryCol = config.find(c => c.isPrimary) || config[0];
+    const metaCols = config.filter(c => !c.isPrimary).slice(0, 3);
+
     filtered.forEach(person => {
         const checked = selectedParticipants.has(person.id) ? 'checked' : '';
         const selectedClass = selectedParticipants.has(person.id) ? 'selected' : '';
+        const metaText = metaCols.map(c => person[c.key] || '').filter(Boolean).join(' | ');
         html += `<div class="participant-item ${selectedClass}" onclick="toggleParticipant('${person.id}', this)">
             <input type="checkbox" ${checked} onclick="event.stopPropagation(); toggleParticipant('${person.id}', this.parentElement)">
             <div class="participant-info">
-                <span class="name">${escapeHtml(person.name)}</span>
-                <span class="meta">${person.rank} | ${person.profession} | ${person.team}</span>
+                <span class="name">${escapeHtml(person[primaryCol.key] || '')}</span>
+                <span class="meta">${escapeHtml(metaText)}</span>
             </div>
         </div>`;
     });
@@ -823,26 +822,32 @@ function renderDetailParticipants(activity) {
     const container = document.getElementById('detailParticipantsList');
     let html = '';
 
+    const dConfig = getColumnConfig();
+    const dPrimaryCol = dConfig.find(c => c.isPrimary) || dConfig[0];
+    const dMetaCols = dConfig.filter(c => !c.isPrimary).slice(0, 3);
+
     activity.participants.forEach((participant, idx) => {
         const person = state.personnel.find(p => p.id === participant.personId);
         if (!person) return;
 
+        const personName = person[dPrimaryCol.key] || '';
         // Filter
-        if (searchTerm && !person.name.toLowerCase().includes(searchTerm)) return;
+        if (searchTerm && !personName.toLowerCase().includes(searchTerm)) return;
         if (statusFilter === 'completed' && !participant.completed) return;
         if (statusFilter === 'pending' && participant.completed) return;
 
         const checked = participant.completed ? 'checked' : '';
         const completedClass = participant.completed ? 'completed-row' : '';
         const isAdmin = state.accessLevel === 'admin';
+        const detailMeta = dMetaCols.map(c => person[c.key] || '').filter(Boolean).join(' | ');
 
         html += `<div class="detail-participant ${completedClass}">
             <div class="checkbox-wrap">
                 <input type="checkbox" ${checked} ${isAdmin ? '' : 'disabled'}
                     onchange="toggleCompletion('${activity.id}', ${idx}, this.checked)">
             </div>
-            <span class="p-name">${escapeHtml(person.name)}</span>
-            <span class="p-meta">${person.rank} | ${person.team} | ${person.profession}</span>
+            <span class="p-name">${escapeHtml(personName)}</span>
+            <span class="p-meta">${escapeHtml(detailMeta)}</span>
         </div>`;
     });
 
@@ -882,8 +887,10 @@ function updateDashboard() {
     document.getElementById('totalPersonnel').textContent = state.personnel.length;
     document.getElementById('totalActivities').textContent = state.activities.length;
 
-    const teams = [...new Set(state.personnel.map(p => p.team).filter(Boolean))];
-    document.getElementById('totalTeams').textContent = teams.length;
+    const dashConfig = getColumnConfig();
+    const groupCol = dashConfig.find(c => c.isFilter) || dashConfig[1] || dashConfig[0];
+    const groups = [...new Set(state.personnel.map(p => p[groupCol.key]).filter(Boolean))];
+    document.getElementById('totalTeams').textContent = groups.length;
 
     // Avg completion
     if (state.activities.length > 0) {
@@ -918,18 +925,19 @@ function updateDashboard() {
         recentContainer.innerHTML = html;
     }
 
-    // Team breakdown
+    // Group breakdown (uses first filter column)
     const teamContainer = document.getElementById('teamBreakdown');
-    const teamCounts = {};
+    const groupCounts = {};
     state.personnel.forEach(p => {
-        if (p.team) {
-            teamCounts[p.team] = (teamCounts[p.team] || 0) + 1;
+        const val = p[groupCol.key];
+        if (val) {
+            groupCounts[val] = (groupCounts[val] || 0) + 1;
         }
     });
     let teamHtml = '';
-    Object.entries(teamCounts).sort((a, b) => b[1] - a[1]).forEach(([team, count]) => {
+    Object.entries(groupCounts).sort((a, b) => b[1] - a[1]).forEach(([group, count]) => {
         teamHtml += `<div class="team-card">
-            <div class="team-name">${escapeHtml(team)}</div>
+            <div class="team-name">${escapeHtml(group)}</div>
             <div class="team-count">${count} אנשים</div>
         </div>`;
     });
@@ -995,6 +1003,161 @@ function showToast(message) {
     toast.classList.remove('hidden');
     clearTimeout(toast._timeout);
     toast._timeout = setTimeout(() => toast.classList.add('hidden'), 3000);
+}
+
+// ==================== Import ====================
+let _importData = null; // { headers: [], rows: [] }
+
+function openImportModal() {
+    if (state.accessLevel !== 'admin') {
+        showToast('אין הרשאה לביצוע פעולה זו');
+        return;
+    }
+    _importData = null;
+    document.getElementById('importStep1').classList.remove('hidden');
+    document.getElementById('importStep2').classList.add('hidden');
+    document.getElementById('importConfirmBtn').classList.add('hidden');
+    document.getElementById('importFileInput').value = '';
+    openModal('importModal');
+
+    // Setup drag & drop
+    const dropZone = document.getElementById('importDropZone');
+    dropZone.onclick = () => document.getElementById('importFileInput').click();
+
+    dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); };
+    dropZone.ondragleave = () => dropZone.classList.remove('drag-over');
+    dropZone.ondrop = (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        const file = e.dataTransfer.files[0];
+        if (file) handleImportFile(file);
+    };
+}
+
+function handleImportFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) handleImportFile(file);
+}
+
+function handleImportFile(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
+
+            if (jsonData.length < 2) {
+                showToast('הקובץ ריק או שאין בו שורות נתונים');
+                return;
+            }
+
+            const headers = jsonData[0].map(h => String(h).trim()).filter(Boolean);
+            const rows = jsonData.slice(1).filter(row => row.some(cell => cell !== ''));
+
+            _importData = { headers, rows };
+            renderColumnConfig(headers, rows.length);
+        } catch (err) {
+            console.error('Import error:', err);
+            showToast('שגיאה בקריאת הקובץ');
+        }
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function renderColumnConfig(headers, rowCount) {
+    document.getElementById('importStep1').classList.add('hidden');
+    document.getElementById('importStep2').classList.remove('hidden');
+    document.getElementById('importConfirmBtn').classList.remove('hidden');
+    document.getElementById('importRowCount').textContent = `${rowCount} שורות`;
+
+    const tbody = document.getElementById('importConfigBody');
+    let html = '';
+    headers.forEach((header, idx) => {
+        const key = 'col_' + idx;
+        html += `<tr>
+            <td><input type="checkbox" class="import-include" data-idx="${idx}" checked></td>
+            <td class="col-name">${escapeHtml(header)}</td>
+            <td><input type="radio" name="importPrimary" value="${idx}" ${idx === 0 ? 'checked' : ''}></td>
+            <td><input type="checkbox" class="import-filter" data-idx="${idx}"></td>
+        </tr>`;
+    });
+    tbody.innerHTML = html;
+}
+
+function confirmImport() {
+    if (!_importData) return;
+
+    if (!confirm('פעולה זו תמחק את כל הנתונים הקיימים. להמשיך?')) return;
+
+    const { headers, rows } = _importData;
+    const includeBoxes = document.querySelectorAll('.import-include');
+    const filterBoxes = document.querySelectorAll('.import-filter');
+    const primaryRadio = document.querySelector('input[name="importPrimary"]:checked');
+    const primaryIdx = primaryRadio ? parseInt(primaryRadio.value) : 0;
+
+    // Build columnConfig
+    const newColumnConfig = [];
+    const includedIndices = [];
+
+    includeBoxes.forEach(cb => {
+        const idx = parseInt(cb.dataset.idx);
+        if (cb.checked) {
+            includedIndices.push(idx);
+            const key = headers[idx].replace(/[^a-zA-Z0-9\u0590-\u05FF]/g, '_').toLowerCase() || 'col_' + idx;
+            // Ensure unique keys
+            let uniqueKey = key;
+            let counter = 1;
+            while (newColumnConfig.find(c => c.key === uniqueKey)) {
+                uniqueKey = key + '_' + counter++;
+            }
+            const filterCb = filterBoxes[idx];
+            newColumnConfig.push({
+                key: uniqueKey,
+                label: headers[idx],
+                isPrimary: idx === primaryIdx,
+                isFilter: filterCb ? filterCb.checked : false
+            });
+        }
+    });
+
+    if (newColumnConfig.length === 0) {
+        showToast('יש לבחור לפחות עמודה אחת');
+        return;
+    }
+
+    // Ensure at least one primary
+    if (!newColumnConfig.find(c => c.isPrimary)) {
+        newColumnConfig[0].isPrimary = true;
+    }
+
+    // Build personnel array
+    const newPersonnel = rows.map(row => {
+        const person = { id: generateId() };
+        includedIndices.forEach((origIdx, configIdx) => {
+            person[newColumnConfig[configIdx].key] = String(row[origIdx] ?? '').trim();
+        });
+        return person;
+    });
+
+    // Replace all data
+    state.personnel = newPersonnel;
+    state.customColumns = [];
+    state.activities = [];
+    state.columnConfig = newColumnConfig;
+    state.sortColumn = null;
+    state.sortDirection = 'asc';
+
+    saveState();
+    populateFilters();
+    renderPersonnelTable();
+    renderActivities();
+    updateDashboard();
+
+    closeModal('importModal');
+    _importData = null;
+    showToast(`יובאו ${newPersonnel.length} שורות בהצלחה`);
 }
 
 // Close modal on overlay click
