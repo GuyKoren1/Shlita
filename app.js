@@ -967,6 +967,77 @@ function exportData() {
     showToast('קובץ יוצא בהצלחה');
 }
 
+// ==================== Activities Export/Import ====================
+function exportActivities() {
+    if (state.activities.length === 0) {
+        showToast('אין פעילויות לייצוא');
+        return;
+    }
+    const json = '\uFEFF' + JSON.stringify(state.activities, null, 2);
+    const blob = new Blob([json], { type: 'application/json;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `פעילויות_${new Date().toLocaleDateString('he-IL')}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('קובץ פעילויות יוצא בהצלחה');
+}
+
+function importActivitiesFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    event.target.value = '';
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            let text = e.target.result;
+            if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+            const activities = JSON.parse(text);
+
+            if (!Array.isArray(activities)) {
+                showToast('קובץ לא תקין - נדרש מערך של פעילויות');
+                return;
+            }
+
+            for (const act of activities) {
+                if (!act.name || !Array.isArray(act.participants)) {
+                    showToast('קובץ לא תקין - כל פעילות חייבת לכלול שם ומשתתפים');
+                    return;
+                }
+            }
+
+            const personnelIds = new Set(state.personnel.map(p => p.id));
+            let orphanCount = 0;
+            let importedCount = 0;
+
+            for (const act of activities) {
+                act.id = generateId();
+                for (const p of act.participants) {
+                    if (!personnelIds.has(p.personId)) {
+                        orphanCount++;
+                    }
+                }
+                state.activities.push(act);
+                importedCount++;
+            }
+
+            saveState();
+            renderActivities();
+
+            let msg = `יובאו ${importedCount} פעילויות בהצלחה`;
+            if (orphanCount > 0) {
+                msg += ` (${orphanCount} משתתפים לא נמצאו בכוח האדם הנוכחי)`;
+            }
+            showToast(msg);
+        } catch (err) {
+            showToast('שגיאה בקריאת הקובץ - ודא שזהו קובץ JSON תקין');
+        }
+    };
+    reader.readAsText(file);
+}
+
 // ==================== Utilities ====================
 function generateId() {
     return '_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
