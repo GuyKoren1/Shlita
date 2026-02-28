@@ -1057,7 +1057,10 @@ function handleImportFile(file) {
             const numHeaders = headers.length;
             const rows = jsonData.slice(1)
                 .map(row => row.slice(0, numHeaders))
-                .filter(row => row.some(cell => String(cell ?? '').trim() !== ''));
+                .filter(row => row.some(cell => {
+                    const v = String(cell ?? '').trim().toLowerCase();
+                    return v !== '' && v !== '0' && v !== 'true' && v !== 'false';
+                }));
 
             _importData = { headers, rows };
             renderColumnConfig(headers, rows.length);
