@@ -1,0 +1,642 @@
+[
+  {
+    "rank": "רס\"ל",
+    "name": "תום ורמן",
+    "profession": "נהג",
+    "team": "אבני",
+    "department": "121",
+    "personalId": "8811109",
+    "weaponId": "1956957",
+    "notes": ""
+  },
+  {
+    "rank": "סמל",
+    "name": "יעקב אראל",
+    "profession": "תותחן",
+    "team": "אבני",
+    "department": "121",
+    "personalId": "8396175",
+    "weaponId": "5029635",
+    "notes": "חסר טופס החתמה"
+  },
+  {
+    "rank": "סרן",
+    "name": "אבשלום ברסלב",
+    "profession": "מפקץ",
+    "team": "אבשה",
+    "department": "",
+    "personalId": "",
+    "weaponId": "5067198",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ם",
+    "name": "רועי איו",
+    "profession": "נהג",
+    "team": "אורין",
+    "department": "121",
+    "personalId": "5913071",
+    "weaponId": "9256977",
+    "notes": ""
+  },
+  {
+    "rank": "סרן",
+    "name": "אוריין מגן",
+    "profession": "מפקץ",
+    "team": "אורין",
+    "department": "121",
+    "personalId": "8050933",
+    "weaponId": "",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ר",
+    "name": "דוד בראז",
+    "profession": "טען",
+    "team": "אורין",
+    "department": "121",
+    "personalId": "6104961",
+    "weaponId": "4084434",
+    "notes": "חסר טופס החתמה"
+  },
+  {
+    "rank": "רס\"ם",
+    "name": "דור בן מאיר",
+    "profession": "תותחן",
+    "team": "אורין",
+    "department": "121",
+    "personalId": "5771680",
+    "weaponId": "5041607",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ר",
+    "name": "עמנואל טואטי",
+    "profession": "תותחן",
+    "team": "אידלבוים",
+    "department": "121",
+    "personalId": "8230202",
+    "weaponId": "5047565",
+    "notes": ""
+  },
+  {
+    "rank": "סמ\"ר",
+    "name": "ניתאי כספי",
+    "profession": "נהג",
+    "team": "אידלבוים",
+    "department": "121",
+    "personalId": "7527065",
+    "weaponId": "5171714",
+    "notes": ""
+  },
+  {
+    "rank": "סרן",
+    "name": "יונתן אידלבוים",
+    "profession": "מפקץ",
+    "team": "אידלבוים",
+    "department": "121",
+    "personalId": "7597913",
+    "weaponId": "9133307",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ל",
+    "name": "אוהד עילם",
+    "profession": "טען",
+    "team": "אידלבוים",
+    "department": "121",
+    "personalId": "8853274",
+    "weaponId": "9448833",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ר",
+    "name": "אורי ויזל",
+    "profession": "תותחן",
+    "team": "בוקסבוים",
+    "department": "121",
+    "personalId": "7640983",
+    "weaponId": "5016412",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ר",
+    "name": "ארז דנינו",
+    "profession": "נהג",
+    "team": "בוקסבוים",
+    "department": "121",
+    "personalId": "6176151",
+    "weaponId": "3444077",
+    "notes": ""
+  },
+  {
+    "rank": "סרן",
+    "name": "איתן בוקסבוים",
+    "profession": "מפקץ",
+    "team": "בוקסבוים",
+    "department": "121",
+    "personalId": "5865402",
+    "weaponId": "4625793",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ר",
+    "name": "עודד נבנצל",
+    "profession": "טען",
+    "team": "בוקסבוים",
+    "department": "121",
+    "personalId": "6909483",
+    "weaponId": "4984063",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ר",
+    "name": "אדם פינקווסקי",
+    "profession": "טען",
+    "team": "בוקסבוים",
+    "department": "121",
+    "personalId": "7725004",
+    "weaponId": "",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ם",
+    "name": "משה יפה",
+    "profession": "נהג",
+    "team": "גיא לנדנר",
+    "department": "89",
+    "personalId": "5791198",
+    "weaponId": "5180999",
+    "notes": ""
+  },
+  {
+    "rank": "סמ\"ר",
+    "name": "אהרון ויצמן",
+    "profession": "תותחן",
+    "team": "גיא לנדנר",
+    "department": "89",
+    "personalId": "7545629",
+    "weaponId": "9248758",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ם",
+    "name": "יונתן שפנגלט",
+    "profession": "תותחן",
+    "team": "יובל",
+    "department": "89",
+    "personalId": "5307243",
+    "weaponId": "9227283",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ר",
+    "name": "ישראל גליק",
+    "profession": "טען",
+    "team": "יובל",
+    "department": "89",
+    "personalId": "7673711",
+    "weaponId": "5102417",
+    "notes": ""
+  },
+  {
+    "rank": "סרן",
+    "name": "יובל קרן",
+    "profession": "מפקץ",
+    "team": "יובל",
+    "department": "89",
+    "personalId": "8296053",
+    "weaponId": "9265177",
+    "notes": "אופסן ביום חמישי 03.7"
+  },
+  {
+    "rank": "רס\"ם",
+    "name": "משה וולף",
+    "profession": "נהג",
+    "team": "יובל",
+    "department": "89",
+    "personalId": "7395564",
+    "weaponId": "",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ם",
+    "name": "אלעד רובינסון",
+    "profession": "תותחן",
+    "team": "ליאון",
+    "department": "129",
+    "personalId": "5801485",
+    "weaponId": "5126934",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ן",
+    "name": "ליאון בן נדבה",
+    "profession": "מפקץ",
+    "team": "ליאון",
+    "department": "129",
+    "personalId": "5947066",
+    "weaponId": "5172307",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ר",
+    "name": "אופיר קולט",
+    "profession": "נהג",
+    "team": "ליאון",
+    "department": "129",
+    "personalId": "5998450",
+    "weaponId": "5246048",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ר",
+    "name": "עמרי צרפתי",
+    "profession": "טען",
+    "team": "ליאון",
+    "department": "129",
+    "personalId": "7723386",
+    "weaponId": "9446866",
+    "notes": ""
+  },
+  {
+    "rank": "סרן",
+    "name": "משה יאיר שושן",
+    "profession": "מפקץ",
+    "team": "מושי",
+    "department": "89",
+    "personalId": "6109029",
+    "weaponId": "4554658",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ר",
+    "name": "הראל בלום",
+    "profession": "תותחן",
+    "team": "מושי",
+    "department": "89",
+    "personalId": "8271842",
+    "weaponId": "5165122",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ל",
+    "name": "חיים אלטבך",
+    "profession": "טען",
+    "team": "מושי",
+    "department": "89",
+    "personalId": "7552722",
+    "weaponId": "9167085",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ר",
+    "name": "יואל רענן",
+    "profession": "נהג",
+    "team": "מושי",
+    "department": "89",
+    "personalId": "5817725",
+    "weaponId": "9388188",
+    "notes": ""
+  },
+  {
+    "rank": "סמ\"ר",
+    "name": "נועם גולדמן",
+    "profession": "תותחן",
+    "team": "ספייר",
+    "department": "89",
+    "personalId": "8517180",
+    "weaponId": "",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ם",
+    "name": "נבות עלי",
+    "profession": "תותחן",
+    "team": "ספייר",
+    "department": "129",
+    "personalId": "5871598",
+    "weaponId": "9417272",
+    "notes": ""
+  },
+  {
+    "rank": "סגן",
+    "name": "עומרי בן חיים",
+    "profession": "מפקץ",
+    "team": "עומרי",
+    "department": "89",
+    "personalId": "8894722",
+    "weaponId": "9446489",
+    "notes": ""
+  },
+  {
+    "rank": "סרן",
+    "name": "עקיבא יעקבוביץ",
+    "profession": "מפקץ",
+    "team": "עקיבא",
+    "department": "121",
+    "personalId": "5981832",
+    "weaponId": "9164788",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ר",
+    "name": "אביתר לרנר",
+    "profession": "נהג",
+    "team": "עקיבא",
+    "department": "121",
+    "personalId": "7535343",
+    "weaponId": "5127172",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ם",
+    "name": "יהונתן טאוב",
+    "profession": "תותחן",
+    "team": "עקיבא",
+    "department": "121",
+    "personalId": "7707600",
+    "weaponId": "5148622",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ר",
+    "name": "דוד סולטן",
+    "profession": "טען",
+    "team": "עקיבא",
+    "department": "121",
+    "personalId": "6046692",
+    "weaponId": "5177629",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ר",
+    "name": "עדי אברהם",
+    "profession": "נהג",
+    "team": "רהב",
+    "department": "121",
+    "personalId": "6178363",
+    "weaponId": "5647874",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ל",
+    "name": "איתמר אסרף",
+    "profession": "תותחן",
+    "team": "רהב",
+    "department": "121",
+    "personalId": "8375283",
+    "weaponId": "9179803",
+    "notes": "חסר טופס החתמה"
+  },
+  {
+    "rank": "סגן",
+    "name": "רהב נוריאליאן עג'מי",
+    "profession": "מפקץ",
+    "team": "רהב",
+    "department": "121",
+    "personalId": "8764453",
+    "weaponId": "9446133",
+    "notes": "חסר טופס החתמה"
+  },
+  {
+    "rank": "רס\"ל",
+    "name": "דניאל בוטקביץ",
+    "profession": "טען",
+    "team": "שטרן",
+    "department": "129",
+    "personalId": "8757623",
+    "weaponId": "5081291",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ל",
+    "name": "גיא מויאל",
+    "profession": "נהג",
+    "team": "שטרן",
+    "department": "129",
+    "personalId": "8189629",
+    "weaponId": "5167442",
+    "notes": ""
+  },
+  {
+    "rank": "סרן",
+    "name": "נדב שטרן",
+    "profession": "מפקץ",
+    "team": "שטרן",
+    "department": "129",
+    "personalId": "7559964",
+    "weaponId": "5191394",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ל",
+    "name": "בן ישראל",
+    "profession": "תותחן",
+    "team": "שטרן",
+    "department": "129",
+    "personalId": "8183988",
+    "weaponId": "9229884",
+    "notes": ""
+  },
+  {
+    "rank": "סגן",
+    "name": "שי בצ'ינסקי",
+    "profession": "מפקץ",
+    "team": "שי בצ'ינסקי",
+    "department": "129",
+    "personalId": "8783439",
+    "weaponId": "5073811",
+    "notes": "חסר טופס החתמה"
+  },
+  {
+    "rank": "סמל",
+    "name": "דביר אבני",
+    "profession": "טען",
+    "team": "שי בצ'ינסקי",
+    "department": "",
+    "personalId": "8434955",
+    "weaponId": "5079252",
+    "notes": "חסר טופס החתמה"
+  },
+  {
+    "rank": "רס\"ל",
+    "name": "חנן וקנין",
+    "profession": "נהג",
+    "team": "שי בצ'ינסקי",
+    "department": "129",
+    "personalId": "8874899",
+    "weaponId": "9180988",
+    "notes": ""
+  },
+  {
+    "rank": "סמ\"ר",
+    "name": "ניר זנד",
+    "profession": "טען",
+    "team": "שמולביץ",
+    "department": "129",
+    "personalId": "8402357",
+    "weaponId": "4982225",
+    "notes": ""
+  },
+  {
+    "rank": "סרן",
+    "name": "גל שמולוביץ",
+    "profession": "מפקץ",
+    "team": "שמולביץ",
+    "department": "129",
+    "personalId": "5892142",
+    "weaponId": "5083537",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ר",
+    "name": "איתן אברמן",
+    "profession": "נהג",
+    "team": "שמולביץ",
+    "department": "129",
+    "personalId": "5803413",
+    "weaponId": "5095719",
+    "notes": ""
+  },
+  {
+    "rank": "סמ\"ר",
+    "name": "הדר וולף",
+    "profession": "תותחן",
+    "team": "שמולביץ",
+    "department": "129",
+    "personalId": "8563998",
+    "weaponId": "5162564",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ר",
+    "name": "איל שלו",
+    "profession": "ק. שליטה",
+    "team": "Mמפלג",
+    "department": "",
+    "personalId": "5816827",
+    "weaponId": "4163198",
+    "notes": ""
+  },
+  {
+    "rank": "סא\"ל",
+    "name": "דניאל ציון",
+    "profession": "מ\"פ",
+    "team": "Mמפלג",
+    "department": "",
+    "personalId": "7691433",
+    "weaponId": "5037920",
+    "notes": ""
+  },
+  {
+    "rank": "סרן",
+    "name": "דור אפללו",
+    "profession": "קלג",
+    "team": "Mמפלג",
+    "department": "",
+    "personalId": "5415367",
+    "weaponId": "5079539",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ל",
+    "name": "יותם אופק",
+    "profession": "נהג מפלג",
+    "team": "Mמפלג",
+    "department": "",
+    "personalId": "8257190",
+    "weaponId": "5116740",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ר",
+    "name": "תום מלמד",
+    "profession": "סמבצ",
+    "team": "Mמפלג",
+    "department": "",
+    "personalId": "8109237",
+    "weaponId": "5123219",
+    "notes": ""
+  },
+  {
+    "rank": "סרן",
+    "name": "גיא קורן",
+    "profession": "קהד",
+    "team": "Mמפלג",
+    "department": "",
+    "personalId": "5674877",
+    "weaponId": "5167650",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ר",
+    "name": "ערן עזרא",
+    "profession": "רספ",
+    "team": "Mמפלג",
+    "department": "",
+    "personalId": "5812924",
+    "weaponId": "5185935",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ר",
+    "name": "אלעד גינזבורג",
+    "profession": "סמבצ",
+    "team": "Mמפלג",
+    "department": "",
+    "personalId": "5866372",
+    "weaponId": "5023633",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ם",
+    "name": "אמיר טנצר",
+    "profession": "שליש",
+    "team": "Mמפלג",
+    "department": "",
+    "personalId": "7682499",
+    "weaponId": "9227203",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ן",
+    "name": "יאיר יודקובסקי",
+    "profession": "קהד",
+    "team": "Mמפלג",
+    "department": "",
+    "personalId": "7177661",
+    "weaponId": "9251542",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ר",
+    "name": "איתי שגב",
+    "profession": "סרספ",
+    "team": "Mמפלג",
+    "department": "",
+    "personalId": "8319695",
+    "weaponId": "9265013",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ן",
+    "name": "חן שטורמן",
+    "profession": "סמפ",
+    "team": "Mמפלג",
+    "department": "",
+    "personalId": "7092932",
+    "weaponId": "9412168",
+    "notes": ""
+  },
+  {
+    "rank": "רס\"ם",
+    "name": "בוריס סמטנין",
+    "profession": "סרספ",
+    "team": "Mמפלג",
+    "department": "",
+    "personalId": "5324895",
+    "weaponId": "9424110",
+    "notes": ""
+  }
+]
