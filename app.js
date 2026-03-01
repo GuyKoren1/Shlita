@@ -72,6 +72,258 @@ const INITIAL_PERSONNEL_DATA = [
   {"rank":"רס\"ם","name":"בוריס סמטנין","profession":"סרספ","team":"Mמפלג","department":"","personalId":"5324895","weaponId":"9424110","notes":""}
 ];
 
+// ==================== Embedded Cameras Data ====================
+const CAMERA_EQUIPMENT_TYPES = [
+    'CF', 'אולר', 'אדום', 'מבן', 'מכלול', 'מדיה מכלול', 'מדיה אלעד ירוק',
+    'אלעד ירוק', 'כרטיס מפעיל', '710', 'וילון', 'מאג 1', 'מאג 2',
+    'מיקרון', 'רימונים', 'משקפת', 'מצפן'
+];
+
+const INITIAL_CAMERAS_DATA = [
+    {
+        id: '_cam_320', tank: '320', commander: 'שטרן', sourceBrigade: '129',
+        items: [
+            { name: 'CF', serial: '986627', status: 'תקין' },
+            { name: 'אולר', serial: '102309188', status: 'תקין' },
+            { name: 'אדום', serial: '552846', status: 'תקין' },
+            { name: 'מבן', serial: '761313', status: 'תקין' },
+            { name: 'מכלול', serial: '805136', status: 'תקין' },
+            { name: 'מדיה מכלול', serial: '1114916', status: 'תקין' },
+            { name: 'מדיה אלעד ירוק', serial: '1110795', status: 'תקין' },
+            { name: 'אלעד ירוק', serial: '483799', status: 'תקין' },
+            { name: 'כרטיס מפעיל', serial: '948165', status: 'תקין' },
+            { name: '710', serial: '', status: 'תקין' },
+            { name: 'וילון', serial: '796022', status: 'תקין' },
+            { name: 'מאג 1', serial: '5040', status: 'תקין' },
+            { name: 'מאג 2', serial: '094', status: 'תקין' },
+            { name: 'מיקרון', serial: '207', status: 'תקין' },
+            { name: 'רימונים', serial: '8', status: 'תקין' },
+            { name: 'משקפת', serial: 'V', status: 'תקין' },
+            { name: 'מצפן', serial: 'V', status: 'תקין' }
+        ]
+    },
+    {
+        id: '_cam_439', tank: '439', commander: "בצ'ינסקי", sourceBrigade: '129',
+        items: [
+            { name: 'CF', serial: '986702', status: 'תקין' },
+            { name: 'אולר', serial: '102307457', status: 'תקין' },
+            { name: 'אדום', serial: '552978', status: 'תקין' },
+            { name: 'מבן', serial: '765370', status: 'תקין' },
+            { name: 'מכלול', serial: '530293', status: 'תקין' },
+            { name: 'מדיה מכלול', serial: '1103044', status: 'תקין' },
+            { name: 'מדיה אלעד ירוק', serial: '1105647', status: 'תקין' },
+            { name: 'אלעד ירוק', serial: '483500', status: 'תקין' },
+            { name: 'כרטיס מפעיל', serial: '903640', status: 'תקין' },
+            { name: '710', serial: '', status: 'תקין' },
+            { name: 'וילון', serial: '88050163', status: 'תקין' },
+            { name: 'מאג 1', serial: '2274', status: 'תקין' },
+            { name: 'מאג 2', serial: '921', status: 'תקין' },
+            { name: 'מיקרון', serial: '199', status: 'תקין' },
+            { name: 'רימונים', serial: '8', status: 'תקין' },
+            { name: 'משקפת', serial: 'V', status: 'תקין' },
+            { name: 'מצפן', serial: 'V', status: 'תקין' }
+        ]
+    },
+    {
+        id: '_cam_325', tank: '325', commander: 'רהב', sourceBrigade: '89',
+        items: [
+            { name: 'CF', serial: '989330', status: 'תקין' },
+            { name: 'אולר', serial: '102307335', status: 'תקין' },
+            { name: 'אדום', serial: '552910', status: 'תקין' },
+            { name: 'מבן', serial: '767446', status: 'תקין' },
+            { name: 'מכלול', serial: '828899', status: 'תקין' },
+            { name: 'מדיה מכלול', serial: '1103629', status: 'תקין' },
+            { name: 'מדיה אלעד ירוק', serial: '110686', status: 'תקין' },
+            { name: 'אלעד ירוק', serial: '482404', status: 'תקין' },
+            { name: 'כרטיס מפעיל', serial: '0117813907', status: 'תקין' },
+            { name: '710', serial: '', status: 'תקין' },
+            { name: 'וילון', serial: '81520016', status: 'תקין' },
+            { name: 'מאג 1', serial: '198', status: 'תקין' },
+            { name: 'מאג 2', serial: '333', status: 'תקין' },
+            { name: 'מיקרון', serial: '205', status: 'תקין' },
+            { name: 'רימונים', serial: '8', status: 'תקין' },
+            { name: 'משקפת', serial: 'V', status: 'תקין' },
+            { name: 'מצפן', serial: 'V', status: 'תקין' }
+        ]
+    },
+    {
+        id: '_cam_281', tank: '281', commander: 'אוריין', sourceBrigade: '121',
+        items: [
+            { name: 'CF', serial: '916253', status: 'תקין' },
+            { name: 'אולר', serial: '102307469', status: 'תקין' },
+            { name: 'אדום', serial: '', status: 'תקין' },
+            { name: 'מבן', serial: '761500', status: 'תקין' },
+            { name: 'מכלול', serial: '522384', status: 'תקין' },
+            { name: 'מדיה מכלול', serial: '1105838', status: 'תקין' },
+            { name: 'מדיה אלעד ירוק', serial: '1100993', status: 'תקין' },
+            { name: 'אלעד ירוק', serial: '484228', status: 'תקין' },
+            { name: 'כרטיס מפעיל', serial: '0078751749', status: 'תקין' },
+            { name: '710', serial: '', status: 'תקין' },
+            { name: 'וילון', serial: '69703073', status: 'תקין' },
+            { name: 'מאג 1', serial: '910', status: 'תקין' },
+            { name: 'מאג 2', serial: '5521', status: 'תקין' },
+            { name: 'מיקרון', serial: '204', status: 'תקין' },
+            { name: 'רימונים', serial: '8', status: 'תקין' },
+            { name: 'משקפת', serial: 'V', status: 'תקין' },
+            { name: 'מצפן', serial: 'V', status: 'תקין' }
+        ]
+    },
+    {
+        id: '_cam_139', tank: '139', commander: 'מושי', sourceBrigade: '89',
+        items: [
+            { name: 'CF', serial: '989079', status: 'תקין' },
+            { name: 'אולר', serial: '102301003', status: 'תקין' },
+            { name: 'אדום', serial: '553078', status: 'תקין' },
+            { name: 'מבן', serial: '765282', status: 'תקין' },
+            { name: 'מכלול', serial: '523255', status: 'תקין' },
+            { name: 'מדיה מכלול', serial: '1111535', status: 'תקין' },
+            { name: 'מדיה אלעד ירוק', serial: '1114386', status: 'תקין' },
+            { name: 'אלעד ירוק', serial: '482035', status: 'תקין' },
+            { name: 'כרטיס מפעיל', serial: '0083702858', status: 'תקין' },
+            { name: '710', serial: '', status: 'תקין' },
+            { name: 'וילון', serial: '482835', status: 'תקין' },
+            { name: 'מאג 1', serial: '9450', status: 'תקין' },
+            { name: 'מאג 2', serial: '6790', status: 'תקין' },
+            { name: 'מיקרון', serial: '190', status: 'תקין' },
+            { name: 'רימונים', serial: '8', status: 'תקין' },
+            { name: 'משקפת', serial: 'V', status: 'תקין' },
+            { name: 'מצפן', serial: 'V', status: 'תקין' }
+        ]
+    },
+    {
+        id: '_cam_319', tank: '319', commander: 'עקיבא', sourceBrigade: '89',
+        items: [
+            { name: 'CF', serial: '989727', status: 'תקין' },
+            { name: 'אולר', serial: '1022301398', status: 'תקין' },
+            { name: 'אדום', serial: '552516', status: 'תקין' },
+            { name: 'מבן', serial: '767435', status: 'תקין' },
+            { name: 'מכלול', serial: '529262', status: 'תקין' },
+            { name: 'מדיה מכלול', serial: '1107786', status: 'תקין' },
+            { name: 'מדיה אלעד ירוק', serial: '1103374', status: 'תקין' },
+            { name: 'אלעד ירוק', serial: '482696', status: 'תקין' },
+            { name: 'כרטיס מפעיל', serial: '117813967', status: 'תקין' },
+            { name: '710', serial: '', status: 'תקין' },
+            { name: 'וילון', serial: '7960295', status: 'תקין' },
+            { name: 'מאג 1', serial: '031', status: 'תקין' },
+            { name: 'מאג 2', serial: '230', status: 'תקין' },
+            { name: 'מיקרון', serial: '201', status: 'תקין' },
+            { name: 'רימונים', serial: '8', status: 'תקין' },
+            { name: 'משקפת', serial: 'V', status: 'תקין' },
+            { name: 'מצפן', serial: 'V', status: 'תקין' }
+        ]
+    },
+    {
+        id: '_cam_029', tank: '029', commander: 'שמול', sourceBrigade: '129',
+        items: [
+            { name: 'CF', serial: '989080', status: 'תקין' },
+            { name: 'אולר', serial: '', status: 'תקין' },
+            { name: 'אדום', serial: '', status: 'תקין' },
+            { name: 'מבן', serial: '765771', status: 'תקין' },
+            { name: 'מכלול', serial: '805981', status: 'תקין' },
+            { name: 'מדיה מכלול', serial: '1113768', status: 'תקין' },
+            { name: 'מדיה אלעד ירוק', serial: '1107403', status: 'תקין' },
+            { name: 'אלעד ירוק', serial: '482912', status: 'תקין' },
+            { name: 'כרטיס מפעיל', serial: '029475', status: 'תקין' },
+            { name: '710', serial: '', status: 'תקין' },
+            { name: 'וילון', serial: '9760152', status: 'תקין' },
+            { name: 'מאג 1', serial: '179', status: 'תקין' },
+            { name: 'מאג 2', serial: '330', status: 'תקין' },
+            { name: 'מיקרון', serial: '151', status: 'תקין' },
+            { name: 'רימונים', serial: '8', status: 'תקין' },
+            { name: 'משקפת', serial: 'V', status: 'תקין' },
+            { name: 'מצפן', serial: 'V', status: 'תקין' }
+        ]
+    },
+    {
+        id: '_cam_mefaked', tank: 'מ"פ', commander: 'רוזן', sourceBrigade: '',
+        items: [
+            { name: 'CF', serial: '548639', status: 'תקין' },
+            { name: 'אולר', serial: '102304863', status: 'תקין' },
+            { name: 'אדום', serial: '', status: 'תקין' },
+            { name: 'מבן', serial: '', status: 'תקין' },
+            { name: 'מכלול', serial: '', status: 'תקין' },
+            { name: 'מדיה מכלול', serial: '', status: 'תקין' },
+            { name: 'מדיה אלעד ירוק', serial: '', status: 'תקין' },
+            { name: 'אלעד ירוק', serial: '', status: 'תקין' },
+            { name: 'כרטיס מפעיל', serial: '', status: 'תקין' },
+            { name: '710', serial: '', status: 'תקין' },
+            { name: 'וילון', serial: '', status: 'תקין' },
+            { name: 'מאג 1', serial: '', status: 'תקין' },
+            { name: 'מאג 2', serial: '', status: 'תקין' },
+            { name: 'מיקרון', serial: '', status: 'תקין' },
+            { name: 'רימונים', serial: '', status: 'תקין' },
+            { name: 'משקפת', serial: '', status: 'תקין' },
+            { name: 'מצפן', serial: '', status: 'תקין' }
+        ]
+    },
+    {
+        id: '_cam_saman', tank: 'סמ"פ', commander: 'יובל', sourceBrigade: '',
+        items: [
+            { name: 'CF', serial: '552719', status: 'תקין' },
+            { name: 'אולר', serial: '102307464', status: 'תקין' },
+            { name: 'אדום', serial: '', status: 'תקין' },
+            { name: 'מבן', serial: '', status: 'תקין' },
+            { name: 'מכלול', serial: '', status: 'תקין' },
+            { name: 'מדיה מכלול', serial: '', status: 'תקין' },
+            { name: 'מדיה אלעד ירוק', serial: '', status: 'תקין' },
+            { name: 'אלעד ירוק', serial: '', status: 'תקין' },
+            { name: 'כרטיס מפעיל', serial: '', status: 'תקין' },
+            { name: '710', serial: '', status: 'תקין' },
+            { name: 'וילון', serial: '', status: 'תקין' },
+            { name: 'מאג 1', serial: '', status: 'תקין' },
+            { name: 'מאג 2', serial: '', status: 'תקין' },
+            { name: 'מיקרון', serial: '', status: 'תקין' },
+            { name: 'רימונים', serial: '', status: 'תקין' },
+            { name: 'משקפת', serial: '', status: 'תקין' },
+            { name: 'מצפן', serial: '', status: 'תקין' }
+        ]
+    },
+    {
+        id: '_cam_shulhan', tank: 'שולחן שליטה', commander: 'איל', sourceBrigade: '',
+        items: [
+            { name: 'CF', serial: '', status: 'תקין' },
+            { name: 'אולר', serial: '', status: 'תקין' },
+            { name: 'אדום', serial: '', status: 'תקין' },
+            { name: 'מבן', serial: '', status: 'תקין' },
+            { name: 'מכלול', serial: '', status: 'תקין' },
+            { name: 'מדיה מכלול', serial: '', status: 'תקין' },
+            { name: 'מדיה אלעד ירוק', serial: '', status: 'תקין' },
+            { name: 'אלעד ירוק', serial: '', status: 'תקין' },
+            { name: 'כרטיס מפעיל', serial: '', status: 'תקין' },
+            { name: '710', serial: '', status: 'תקין' },
+            { name: 'וילון', serial: '', status: 'תקין' },
+            { name: 'מאג 1', serial: '', status: 'תקין' },
+            { name: 'מאג 2', serial: '', status: 'תקין' },
+            { name: 'מיקרון', serial: '', status: 'תקין' },
+            { name: 'רימונים', serial: '', status: 'תקין' },
+            { name: 'משקפת', serial: '', status: 'תקין' },
+            { name: 'מצפן', serial: '', status: 'תקין' }
+        ]
+    },
+    {
+        id: '_cam_mechola', tank: 'מכולה', commander: '', sourceBrigade: '',
+        items: [
+            { name: 'CF', serial: '', status: 'תקין' },
+            { name: 'אולר', serial: '', status: 'תקין' },
+            { name: 'אדום', serial: '', status: 'תקין' },
+            { name: 'מבן', serial: '', status: 'תקין' },
+            { name: 'מכלול', serial: '', status: 'תקין' },
+            { name: 'מדיה מכלול', serial: '', status: 'תקין' },
+            { name: 'מדיה אלעד ירוק', serial: '', status: 'תקין' },
+            { name: 'אלעד ירוק', serial: '', status: 'תקין' },
+            { name: 'כרטיס מפעיל', serial: '', status: 'תקין' },
+            { name: '710', serial: '', status: 'תקין' },
+            { name: 'וילון', serial: '', status: 'תקין' },
+            { name: 'מאג 1', serial: '', status: 'תקין' },
+            { name: 'מאג 2', serial: '', status: 'תקין' },
+            { name: 'מיקרון', serial: '', status: 'תקין' },
+            { name: 'רימונים', serial: '', status: 'תקין' },
+            { name: 'משקפת', serial: '', status: 'תקין' },
+            { name: 'מצפן', serial: '', status: 'תקין' }
+        ]
+    }
+];
+
 const FIXED_COLUMNS = [
     { key: 'name', label: 'שם', type: 'text' },
     { key: 'rank', label: 'דרגה', type: 'text' },
@@ -101,7 +353,8 @@ let state = {
     sortDirection: 'asc',
     editingCell: null,
     editingPersonIndex: null, // for edit mode in modal
-    currentActivityId: null
+    currentActivityId: null,
+    cameras: []
 };
 
 // ==================== Initialize ====================
@@ -161,6 +414,7 @@ async function loadState() {
             state.customColumns = data.customColumns || [];
             state.activities = data.activities || [];
             state.columnConfig = data.columnConfig || null;
+            state.cameras = data.cameras || [];
             return;
         }
     } catch (err) {
@@ -174,6 +428,7 @@ async function loadState() {
         state.customColumns = parsed.customColumns || [];
         state.activities = parsed.activities || [];
         state.columnConfig = parsed.columnConfig || null;
+        state.cameras = parsed.cameras || [];
     }
 }
 
@@ -189,7 +444,8 @@ async function _saveStateNow() {
         personnel: state.personnel,
         customColumns: state.customColumns,
         activities: state.activities,
-        columnConfig: state.columnConfig
+        columnConfig: state.columnConfig,
+        cameras: state.cameras
     };
     try {
         const res = await fetch('/api/data', {
@@ -205,8 +461,16 @@ async function _saveStateNow() {
 }
 
 function loadInitialData() {
+    // Load cameras if empty
+    if (state.cameras.length === 0) {
+        state.cameras = JSON.parse(JSON.stringify(INITIAL_CAMERAS_DATA));
+    }
+
     // Server handles initialization - just check if data loaded
-    if (state.personnel.length > 0) return;
+    if (state.personnel.length > 0) {
+        saveState();
+        return;
+    }
 
     // Fallback: load from embedded data if server returned empty
     state.personnel = INITIAL_PERSONNEL_DATA.map(p => ({
@@ -273,6 +537,7 @@ function switchView(viewName) {
 
     if (viewName === 'dashboard') updateDashboard();
     if (viewName === 'activities') renderActivities();
+    if (viewName === 'cameras') renderCameras();
 }
 
 // ==================== Filters ====================
@@ -1235,6 +1500,114 @@ function confirmImport() {
     closeModal('importModal');
     _importData = null;
     showToast(`יובאו ${newPersonnel.length} שורות בהצלחה`);
+}
+
+// ==================== Cameras ====================
+function renderCameras() {
+    const cameras = state.cameras;
+    if (!cameras || cameras.length === 0) return;
+
+    const thead = document.getElementById('camerasHead');
+    const tbody = document.getElementById('camerasBody');
+
+    // Header: # | ציוד | tank1 | tank2 | ...
+    let headHtml = '<tr class="camera-header-row"><th>#</th><th>ציוד</th>';
+    cameras.forEach(c => {
+        headHtml += `<th>${escapeHtml(c.tank)}</th>`;
+    });
+    headHtml += '</tr>';
+    thead.innerHTML = headHtml;
+
+    let bodyHtml = '';
+
+    // Commander row
+    bodyHtml += '<tr class="camera-commander-row"><td></td><td style="text-align:right">מפקד</td>';
+    cameras.forEach(c => {
+        bodyHtml += `<td>${escapeHtml(c.commander)}</td>`;
+    });
+    bodyHtml += '</tr>';
+
+    // Source brigade row
+    bodyHtml += '<tr class="camera-brigade-row"><td></td><td style="text-align:right">חטיבת מקור</td>';
+    cameras.forEach(c => {
+        bodyHtml += `<td>${escapeHtml(c.sourceBrigade)}</td>`;
+    });
+    bodyHtml += '</tr>';
+
+    // Equipment rows
+    const equipmentCount = cameras[0].items.length;
+    for (let itemIdx = 0; itemIdx < equipmentCount; itemIdx++) {
+        bodyHtml += `<tr><td>${itemIdx + 1}</td><td style="text-align:right">${escapeHtml(cameras[0].items[itemIdx].name)}</td>`;
+        cameras.forEach((cam, tankIdx) => {
+            const item = cam.items[itemIdx];
+            const isFaulty = item.status === 'תקול';
+            const dotClass = isFaulty ? 'faulty' : 'ok';
+            const cellClass = isFaulty ? 'camera-cell faulty' : 'camera-cell';
+            const serial = escapeHtml(item.serial);
+
+            bodyHtml += `<td class="${cellClass}" onclick="toggleCameraStatus(${tankIdx}, ${itemIdx})" ondblclick="editCameraCell(event, ${tankIdx}, ${itemIdx})">`;
+            bodyHtml += `<div class="camera-cell-content">`;
+            if (serial) {
+                bodyHtml += `<span class="camera-serial">${serial}</span>`;
+            }
+            bodyHtml += `<span class="camera-status-dot ${dotClass}"></span>`;
+            bodyHtml += `</div></td>`;
+        });
+        bodyHtml += '</tr>';
+    }
+
+    // Summary row: count faulty per tank
+    bodyHtml += '<tr class="camera-brigade-row"><td></td><td style="text-align:right;font-weight:600">תקולים</td>';
+    cameras.forEach(cam => {
+        const faultyCount = cam.items.filter(i => i.status === 'תקול').length;
+        const color = faultyCount > 0 ? 'var(--danger)' : 'var(--success)';
+        bodyHtml += `<td style="font-weight:700;color:${color}">${faultyCount}</td>`;
+    });
+    bodyHtml += '</tr>';
+
+    tbody.innerHTML = bodyHtml;
+}
+
+function toggleCameraStatus(tankIdx, itemIdx) {
+    if (state.accessLevel !== 'admin') return;
+    const item = state.cameras[tankIdx].items[itemIdx];
+    item.status = item.status === 'תקין' ? 'תקול' : 'תקין';
+    saveState();
+    renderCameras();
+}
+
+function editCameraCell(event, tankIdx, itemIdx) {
+    if (state.accessLevel !== 'admin') return;
+    event.stopPropagation();
+
+    const td = event.currentTarget;
+    const item = state.cameras[tankIdx].items[itemIdx];
+    const currentSerial = item.serial;
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'cell-edit';
+    input.value = currentSerial;
+
+    td.innerHTML = '';
+    td.appendChild(input);
+    input.focus();
+    input.select();
+
+    const finish = () => {
+        const newVal = input.value.trim();
+        if (newVal !== currentSerial) {
+            item.serial = newVal;
+            saveState();
+        }
+        renderCameras();
+    };
+
+    input.addEventListener('blur', finish);
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { input.blur(); }
+        if (e.key === 'Escape') { input.value = currentSerial; input.blur(); }
+    });
 }
 
 // Close modal on overlay click

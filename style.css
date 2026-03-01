@@ -1219,6 +1219,148 @@ h4 {
     font-weight: 500;
 }
 
+/* ==================== Cameras Table ==================== */
+.cameras-table-container {
+    max-height: calc(100vh - 160px);
+}
+
+.cameras-table-container table {
+    min-width: 900px;
+}
+
+.cameras-table-container th {
+    text-align: center;
+    font-size: 13px;
+    padding: 10px 8px;
+}
+
+.cameras-table-container th:first-child,
+.cameras-table-container th:nth-child(2) {
+    text-align: right;
+}
+
+.cameras-table-container td:first-child {
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--bg-tertiary);
+    position: sticky;
+    right: 0;
+    z-index: 5;
+    min-width: 60px;
+    text-align: center;
+    font-size: 12px;
+}
+
+.cameras-table-container td:nth-child(2) {
+    font-weight: 600;
+    background: var(--bg-tertiary);
+    position: sticky;
+    right: 60px;
+    z-index: 5;
+    min-width: 120px;
+}
+
+.cameras-table-container th:first-child {
+    position: sticky;
+    right: 0;
+    z-index: 11;
+    min-width: 60px;
+}
+
+.cameras-table-container th:nth-child(2) {
+    position: sticky;
+    right: 60px;
+    z-index: 11;
+    min-width: 120px;
+}
+
+.camera-cell {
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    transition: all var(--transition);
+    position: relative;
+    min-width: 100px;
+    padding: 6px 8px !important;
+}
+
+.camera-cell:hover {
+    background: var(--accent-bg);
+}
+
+.camera-cell.faulty {
+    background: var(--danger-bg);
+}
+
+.camera-cell.faulty:hover {
+    background: rgba(248, 113, 113, 0.2);
+}
+
+.camera-cell-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.camera-serial {
+    font-size: 12px;
+    font-family: monospace;
+    direction: ltr;
+}
+
+.camera-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.camera-status-dot.ok {
+    background: var(--success);
+    box-shadow: 0 0 4px rgba(52, 211, 153, 0.4);
+}
+
+.camera-status-dot.faulty {
+    background: var(--danger);
+    box-shadow: 0 0 4px rgba(248, 113, 113, 0.4);
+}
+
+.camera-cell input.cell-edit {
+    background: var(--bg-input);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    color: var(--text-primary);
+    padding: 4px 6px;
+    font-size: 12px;
+    width: 90px;
+    outline: none;
+    text-align: center;
+    font-family: monospace;
+    direction: ltr;
+}
+
+.camera-commander-row td {
+    background: var(--bg-tertiary) !important;
+    font-weight: 600;
+    font-size: 13px;
+    text-align: center;
+    padding: 8px !important;
+    color: var(--accent);
+}
+
+.camera-brigade-row td {
+    background: var(--bg-secondary);
+    font-size: 12px;
+    text-align: center;
+    color: var(--text-muted);
+    padding: 6px 8px !important;
+}
+
+.camera-header-row {
+    cursor: default !important;
+}
+
 /* ==================== Responsive ==================== */
 @media (max-width: 768px) {
     .sidebar {
