@@ -1507,14 +1507,16 @@ function renderCameras() {
     const cameras = state.cameras;
     if (!cameras || cameras.length === 0) return;
 
+    const isAdmin = state.accessLevel === 'admin';
     const thead = document.getElementById('camerasHead');
     const tbody = document.getElementById('camerasBody');
 
-    // Header: # | ציוד | tank1 | tank2 | ...
+    // Header: # | ציוד | tank1 | tank2 | ... | (actions if admin)
     let headHtml = '<tr class="camera-header-row"><th>#</th><th>ציוד</th>';
     cameras.forEach(c => {
         headHtml += `<th>${escapeHtml(c.tank)}</th>`;
     });
+    if (isAdmin) headHtml += '<th></th>';
     headHtml += '</tr>';
     thead.innerHTML = headHtml;
 
@@ -1522,16 +1524,26 @@ function renderCameras() {
 
     // Commander row
     bodyHtml += '<tr class="camera-commander-row"><td></td><td style="text-align:right">מפקד</td>';
-    cameras.forEach(c => {
-        bodyHtml += `<td>${escapeHtml(c.commander)}</td>`;
+    cameras.forEach((c, tankIdx) => {
+        if (isAdmin) {
+            bodyHtml += `<td class="camera-info-cell" ondblclick="editCameraInfoCell(event, ${tankIdx}, 'commander')">${escapeHtml(c.commander)}</td>`;
+        } else {
+            bodyHtml += `<td>${escapeHtml(c.commander)}</td>`;
+        }
     });
+    if (isAdmin) bodyHtml += '<td></td>';
     bodyHtml += '</tr>';
 
     // Source brigade row
     bodyHtml += '<tr class="camera-brigade-row"><td></td><td style="text-align:right">חטיבת מקור</td>';
-    cameras.forEach(c => {
-        bodyHtml += `<td>${escapeHtml(c.sourceBrigade)}</td>`;
+    cameras.forEach((c, tankIdx) => {
+        if (isAdmin) {
+            bodyHtml += `<td class="camera-info-cell" ondblclick="editCameraInfoCell(event, ${tankIdx}, 'sourceBrigade')">${escapeHtml(c.sourceBrigade)}</td>`;
+        } else {
+            bodyHtml += `<td>${escapeHtml(c.sourceBrigade)}</td>`;
+        }
     });
+    if (isAdmin) bodyHtml += '<td></td>';
     bodyHtml += '</tr>';
 
     // Equipment rows
@@ -1553,6 +1565,9 @@ function renderCameras() {
             bodyHtml += `<span class="camera-status-dot ${dotClass}"></span>`;
             bodyHtml += `</div></td>`;
         });
+        if (isAdmin) {
+            bodyHtml += `<td class="camera-actions-cell"><button class="btn-icon delete-row-btn" onclick="deleteCameraRow(${itemIdx})" title="מחק שורה"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td>`;
+        }
         bodyHtml += '</tr>';
     }
 
@@ -1563,6 +1578,7 @@ function renderCameras() {
         const color = faultyCount > 0 ? 'var(--danger)' : 'var(--success)';
         bodyHtml += `<td style="font-weight:700;color:${color}">${faultyCount}</td>`;
     });
+    if (isAdmin) bodyHtml += '<td></td>';
     bodyHtml += '</tr>';
 
     tbody.innerHTML = bodyHtml;
@@ -1608,6 +1624,92 @@ function editCameraCell(event, tankIdx, itemIdx) {
         if (e.key === 'Enter') { input.blur(); }
         if (e.key === 'Escape') { input.value = currentSerial; input.blur(); }
     });
+}
+
+function editCameraInfoCell(event, tankIdx, field) {
+    if (state.accessLevel !== 'admin') return;
+    event.stopPropagation();
+
+    const td = event.currentTarget;
+    const currentVal = state.cameras[tankIdx][field] || '';
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'cell-edit';
+    input.value = currentVal;
+
+    td.innerHTML = '';
+    td.appendChild(input);
+    input.focus();
+    input.select();
+
+    const finish = () => {
+        const newVal = input.value.trim();
+        if (newVal !== currentVal) {
+            state.cameras[tankIdx][field] = newVal;
+            saveState();
+        }
+        renderCameras();
+    };
+
+    input.addEventListener('blur', finish);
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { input.blur(); }
+        if (e.key === 'Escape') { input.value = currentVal; input.blur(); }
+    });
+}
+
+function deleteCameraRow(itemIdx) {
+    if (state.accessLevel !== 'admin') return;
+    const name = state.cameras[0].items[itemIdx].name;
+    if (!confirm(`למחוק את ${name}?`)) return;
+
+    state.cameras.forEach(cam => {
+        cam.items.splice(itemIdx, 1);
+    });
+    saveState();
+    renderCameras();
+    showToast(`${name} נמחק`);
+}
+
+function exportCameras() {
+    const cameras = state.cameras;
+    if (!cameras || cameras.length === 0) {
+        showToast('אין נתוני צלמים לייצוא');
+        return;
+    }
+
+    let csv = '\uFEFF'; // BOM for Excel Hebrew support
+
+    // Header row: ציוד | tank names...
+    csv += ['ציוד', ...cameras.map(c => `"${c.tank}"`)].join(',') + '\n';
+
+    // Commander row
+    csv += ['מפקד', ...cameras.map(c => `"${(c.commander || '').replace(/"/g, '""')}"`)].join(',') + '\n';
+
+    // Brigade row
+    csv += ['חטיבת מקור', ...cameras.map(c => `"${(c.sourceBrigade || '').replace(/"/g, '""')}"`)].join(',') + '\n';
+
+    // Equipment rows
+    const equipmentCount = cameras[0].items.length;
+    for (let i = 0; i < equipmentCount; i++) {
+        const row = [`"${cameras[0].items[i].name}"`];
+        cameras.forEach(cam => {
+            const item = cam.items[i];
+            const val = item.serial ? `${item.serial} (${item.status})` : item.status;
+            row.push(`"${val.replace(/"/g, '""')}"`);
+        });
+        csv += row.join(',') + '\n';
+    }
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `צלמים_${new Date().toLocaleDateString('he-IL')}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('קובץ צלמים יוצא בהצלחה');
 }
 
 // Close modal on overlay click

@@ -1361,6 +1361,50 @@ h4 {
     cursor: default !important;
 }
 
+.camera-info-cell {
+    cursor: pointer;
+}
+
+.camera-info-cell:hover {
+    outline: 1px dashed var(--accent);
+    outline-offset: -1px;
+}
+
+.camera-info-cell input.cell-edit {
+    background: var(--bg-input);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    color: var(--text-primary);
+    padding: 4px 6px;
+    font-size: 13px;
+    width: 80px;
+    outline: none;
+    text-align: center;
+}
+
+.camera-actions-cell {
+    text-align: center;
+    padding: 4px !important;
+}
+
+.delete-row-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 4px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition);
+}
+
+.delete-row-btn:hover {
+    color: var(--danger);
+    background: var(--danger-bg);
+}
+
 /* ==================== Responsive ==================== */
 @media (max-width: 768px) {
     .sidebar {
