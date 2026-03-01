@@ -235,7 +235,7 @@ const INITIAL_CAMERAS_DATA = [
         ]
     },
     {
-        id: '_cam_mefaked', tank: 'מ"פ', commander: 'רוזן', sourceBrigade: '',
+        id: '_cam_mefaked', tank: 'מ״פ', commander: 'רוזן', sourceBrigade: '',
         items: [
             { name: 'CF', serial: '548639', status: 'תקין' },
             { name: 'אולר', serial: '102304863', status: 'תקין' },
@@ -257,7 +257,7 @@ const INITIAL_CAMERAS_DATA = [
         ]
     },
     {
-        id: '_cam_saman', tank: 'סמ"פ', commander: 'יובל', sourceBrigade: '',
+        id: '_cam_saman', tank: 'סמ״פ', commander: 'יובל', sourceBrigade: '',
         items: [
             { name: 'CF', serial: '552719', status: 'תקין' },
             { name: 'אולר', serial: '102307464', status: 'תקין' },
@@ -1312,7 +1312,7 @@ function escapeHtml(str) {
     if (!str) return '';
     const div = document.createElement('div');
     div.textContent = str;
-    return div.innerHTML;
+    return div.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 function formatDate(dateStr) {
