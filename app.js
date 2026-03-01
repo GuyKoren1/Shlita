@@ -1022,7 +1022,14 @@ function addColumn() {
     const type = document.getElementById('columnType').value;
 
     state.customColumns.push({ key, label: name, type });
+
+    // Also add to columnConfig if it exists, so the column is visible
+    if (state.columnConfig) {
+        state.columnConfig.push({ key, label: name, isPrimary: false, isFilter: false });
+    }
+
     saveState();
+    populateFilters();
     renderPersonnelTable();
     closeModal('addColumnModal');
     showToast(`עמודה "${name}" נוספה בהצלחה`);
