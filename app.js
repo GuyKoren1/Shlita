@@ -354,7 +354,9 @@ let state = {
     editingCell: null,
     editingPersonIndex: null, // for edit mode in modal
     currentActivityId: null,
-    cameras: []
+    cameras: [],
+    snapshots: [],
+    viewingSnapshotId: null // UI-only, not persisted
 };
 
 // ==================== Initialize ====================
@@ -415,6 +417,7 @@ async function loadState() {
             state.activities = data.activities || [];
             state.columnConfig = data.columnConfig || null;
             state.cameras = data.cameras || [];
+            state.snapshots = data.snapshots || [];
             return;
         }
     } catch (err) {
@@ -429,6 +432,7 @@ async function loadState() {
         state.activities = parsed.activities || [];
         state.columnConfig = parsed.columnConfig || null;
         state.cameras = parsed.cameras || [];
+        state.snapshots = parsed.snapshots || [];
     }
 }
 
@@ -445,7 +449,8 @@ async function _saveStateNow() {
         customColumns: state.customColumns,
         activities: state.activities,
         columnConfig: state.columnConfig,
-        cameras: state.cameras
+        cameras: state.cameras,
+        snapshots: state.snapshots
     };
     try {
         const res = await fetch('/api/data', {
@@ -521,10 +526,140 @@ function updateThemeIcon() {
 // ==================== App Init ====================
 function initApp() {
     loadInitialData();
+    renderSnapshotSelector();
     populateFilters();
     renderPersonnelTable();
     renderActivities();
     updateDashboard();
+
+    // Show "Add New Day" button for admin only
+    const addDayBtn = document.getElementById('addNewDayBtn');
+    if (addDayBtn) {
+        addDayBtn.style.display = state.accessLevel === 'admin' ? '' : 'none';
+    }
+}
+
+// ==================== Snapshots ====================
+function isViewingSnapshot() {
+    return state.viewingSnapshotId !== null;
+}
+
+function getActivePersonnel() {
+    if (isViewingSnapshot()) {
+        const snap = state.snapshots.find(s => s.id === state.viewingSnapshotId);
+        return snap ? snap.personnel : [];
+    }
+    return state.personnel;
+}
+
+function getActiveColumnConfig() {
+    if (isViewingSnapshot()) {
+        const snap = state.snapshots.find(s => s.id === state.viewingSnapshotId);
+        if (snap && snap.columnConfig) return snap.columnConfig;
+    }
+    return getColumnConfig();
+}
+
+function getActiveCustomColumns() {
+    if (isViewingSnapshot()) {
+        const snap = state.snapshots.find(s => s.id === state.viewingSnapshotId);
+        return snap ? (snap.customColumns || []) : [];
+    }
+    return state.customColumns;
+}
+
+function addNewDay() {
+    if (state.accessLevel !== 'admin') {
+        showToast('אין הרשאה לביצוע פעולה זו');
+        return;
+    }
+
+    const today = new Date().toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric', year: 'numeric' });
+    if (!confirm(`לשמור תמונת מצב של כוח האדם ליום ${today}?`)) return;
+
+    const snapshot = {
+        id: generateId(),
+        date: new Date().toISOString(),
+        label: today,
+        personnel: JSON.parse(JSON.stringify(state.personnel)),
+        customColumns: JSON.parse(JSON.stringify(state.customColumns)),
+        columnConfig: state.columnConfig ? JSON.parse(JSON.stringify(state.columnConfig)) : null
+    };
+
+    state.snapshots.push(snapshot);
+    saveState();
+    renderSnapshotSelector();
+    showToast(`תמונת מצב ליום ${today} נשמרה`);
+}
+
+function viewSnapshot(id) {
+    if (id === null) {
+        state.viewingSnapshotId = null;
+    } else {
+        state.viewingSnapshotId = id;
+    }
+    populateFilters();
+    renderPersonnelTable();
+    renderSnapshotSelector();
+}
+
+function deleteSnapshot(id) {
+    if (state.accessLevel !== 'admin') return;
+    const snap = state.snapshots.find(s => s.id === id);
+    if (!snap) return;
+    if (!confirm(`למחוק את תמונת המצב מ-${snap.label}?`)) return;
+
+    state.snapshots = state.snapshots.filter(s => s.id !== id);
+    if (state.viewingSnapshotId === id) {
+        state.viewingSnapshotId = null;
+    }
+    saveState();
+    populateFilters();
+    renderPersonnelTable();
+    renderSnapshotSelector();
+    showToast('תמונת מצב נמחקה');
+}
+
+function renderSnapshotSelector() {
+    const bar = document.getElementById('snapshotBar');
+    if (!bar) return;
+
+    if (state.snapshots.length === 0 && !isViewingSnapshot()) {
+        bar.classList.add('hidden');
+        bar.innerHTML = '';
+        return;
+    }
+
+    bar.classList.remove('hidden');
+    let html = '';
+
+    // Read-only banner when viewing a snapshot
+    if (isViewingSnapshot()) {
+        const snap = state.snapshots.find(s => s.id === state.viewingSnapshotId);
+        const label = snap ? snap.label : '';
+        html += `<div class="snapshot-banner">
+            <span>צפייה בתמונת מצב מיום ${escapeHtml(label)} (קריאה בלבד)</span>
+            <button class="banner-back" onclick="viewSnapshot(null)">חזור ליום נוכחי</button>
+        </div>`;
+    }
+
+    // Chips
+    html += '<div class="snapshot-chips">';
+    // Current day chip
+    const currentActive = !isViewingSnapshot() ? 'active' : '';
+    html += `<span class="snapshot-chip ${currentActive}" onclick="viewSnapshot(null)">היום (נוכחי)</span>`;
+
+    // Snapshot chips (newest first)
+    [...state.snapshots].reverse().forEach(snap => {
+        const activeClass = state.viewingSnapshotId === snap.id ? 'active' : '';
+        const deleteBtn = state.accessLevel === 'admin'
+            ? `<span class="chip-delete" onclick="event.stopPropagation(); deleteSnapshot('${snap.id}')" title="מחק">&times;</span>`
+            : '';
+        html += `<span class="snapshot-chip ${activeClass}" onclick="viewSnapshot('${snap.id}')">${escapeHtml(snap.label)}${deleteBtn}</span>`;
+    });
+
+    html += '</div>';
+    bar.innerHTML = html;
 }
 
 // ==================== View Switching ====================
@@ -542,14 +677,15 @@ function switchView(viewName) {
 
 // ==================== Filters ====================
 function populateFilters() {
-    const config = getColumnConfig();
+    const config = isViewingSnapshot() ? getActiveColumnConfig() : getColumnConfig();
     const filterColumns = config.filter(c => c.isFilter);
+    const activePersonnel = getActivePersonnel();
 
     // Build main filters container
     const mainContainer = document.getElementById('filtersContainer');
     let mainHtml = '<div class="filter-group"><input type="text" id="searchInput" placeholder="חיפוש חופשי..." oninput="applyFilters()"></div>';
     filterColumns.forEach(col => {
-        const values = [...new Set(state.personnel.map(p => p[col.key]).filter(Boolean))].sort();
+        const values = [...new Set(activePersonnel.map(p => p[col.key]).filter(Boolean))].sort();
         mainHtml += `<div class="filter-group"><select id="filter_${col.key}" onchange="applyFilters()">`;
         mainHtml += `<option value="">כל ${col.label}</option>`;
         values.forEach(v => { mainHtml += `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`; });
@@ -577,7 +713,7 @@ function populateFilters() {
 function getFilteredPersonnel() {
     const searchEl = document.getElementById('searchInput');
     const search = searchEl ? searchEl.value.toLowerCase() : '';
-    const config = getColumnConfig();
+    const config = isViewingSnapshot() ? getActiveColumnConfig() : getColumnConfig();
     const filterColumns = config.filter(c => c.isFilter);
 
     // Collect active filter values
@@ -587,7 +723,7 @@ function getFilteredPersonnel() {
         if (el && el.value) activeFilters.push({ key: col.key, value: el.value });
     });
 
-    return state.personnel.filter(p => {
+    return getActivePersonnel().filter(p => {
         for (const f of activeFilters) {
             if (p[f.key] !== f.value) return false;
         }
@@ -620,12 +756,14 @@ function getColumnConfig() {
 }
 
 function getAllColumns() {
-    const config = getColumnConfig();
+    const config = isViewingSnapshot() ? getActiveColumnConfig() : getColumnConfig();
     // Map columnConfig entries to column objects (with type 'text' for table rendering)
     const cols = config.map(c => ({ key: c.key, label: c.label, type: 'text' }));
     // Also append any legacy custom columns not in config
-    if (!state.columnConfig) {
-        state.customColumns.forEach(cc => {
+    const customCols = isViewingSnapshot() ? getActiveCustomColumns() : state.customColumns;
+    const colConfig = isViewingSnapshot() ? null : state.columnConfig;
+    if (!colConfig) {
+        customCols.forEach(cc => {
             if (!cols.find(c => c.key === cc.key)) {
                 cols.push(cc);
             }
@@ -637,6 +775,9 @@ function getAllColumns() {
 function renderPersonnelTable() {
     const filtered = getFilteredPersonnel();
     const columns = getAllColumns();
+    const viewing = isViewingSnapshot();
+    const canEdit = state.accessLevel === 'admin' && !viewing;
+    const activePersonnel = getActivePersonnel();
 
     // Sort
     if (state.sortColumn) {
@@ -657,7 +798,7 @@ function renderPersonnelTable() {
             : '';
         headerHtml += `<th class="${sortClass}" onclick="sortBy('${col.key}')">${col.label}</th>`;
     });
-    if (state.accessLevel === 'admin') {
+    if (canEdit) {
         headerHtml += '<th style="width:80px">פעולות</th>';
     }
     headerHtml += '</tr>';
@@ -670,18 +811,18 @@ function renderPersonnelTable() {
     } else {
         let bodyHtml = '';
         filtered.forEach((person, idx) => {
-            const globalIdx = state.personnel.indexOf(person);
+            const globalIdx = activePersonnel.indexOf(person);
             bodyHtml += `<tr>`;
             bodyHtml += `<td style="color:var(--text-muted)">${idx + 1}</td>`;
             columns.forEach(col => {
                 const val = person[col.key] || '';
-                if (state.accessLevel === 'admin') {
+                if (canEdit) {
                     bodyHtml += `<td class="editable" ondblclick="startCellEdit(this, ${globalIdx}, '${col.key}')">${escapeHtml(val)}</td>`;
                 } else {
                     bodyHtml += `<td>${escapeHtml(val)}</td>`;
                 }
             });
-            if (state.accessLevel === 'admin') {
+            if (canEdit) {
                 bodyHtml += `<td>
                     <div class="row-actions">
                         <button title="ערוך" onclick="openEditPersonModal(${globalIdx})">✏️</button>
@@ -695,7 +836,7 @@ function renderPersonnelTable() {
     }
 
     // Count
-    document.getElementById('personnelCount').textContent = `${filtered.length} / ${state.personnel.length}`;
+    document.getElementById('personnelCount').textContent = `${filtered.length} / ${activePersonnel.length}`;
 }
 
 function sortBy(column) {
@@ -711,6 +852,7 @@ function sortBy(column) {
 // ==================== Inline Cell Editing ====================
 function startCellEdit(td, personIdx, colKey) {
     if (state.accessLevel !== 'admin') return;
+    if (isViewingSnapshot()) return;
     if (state.editingCell) return;
 
     const currentValue = state.personnel[personIdx][colKey] || '';
@@ -776,6 +918,10 @@ function openAddPersonModal() {
         showToast('אין הרשאה לביצוע פעולה זו');
         return;
     }
+    if (isViewingSnapshot()) {
+        showToast('לא ניתן לערוך תמונת מצב');
+        return;
+    }
     state.editingPersonIndex = null;
     document.getElementById('addPersonModalTitle').textContent = 'הוסף איש חדש';
     renderPersonFormFields();
@@ -784,6 +930,7 @@ function openAddPersonModal() {
 
 function openEditPersonModal(idx) {
     if (state.accessLevel !== 'admin') return;
+    if (isViewingSnapshot()) return;
     state.editingPersonIndex = idx;
     const person = state.personnel[idx];
 

@@ -40,7 +40,8 @@ function buildSeedData() {
     return {
         personnel,
         customColumns: [],
-        activities: []
+        activities: [],
+        snapshots: []
     };
 }
 
@@ -92,13 +93,14 @@ app.get('/api/data', async (req, res) => {
 // POST /api/data
 app.post('/api/data', async (req, res) => {
     try {
-        const { personnel, customColumns, activities, columnConfig, cameras } = req.body;
+        const { personnel, customColumns, activities, columnConfig, cameras, snapshots } = req.body;
         const data = {
             personnel: personnel || [],
             customColumns: customColumns || [],
             activities: activities || [],
             columnConfig: columnConfig || null,
-            cameras: cameras || []
+            cameras: cameras || [],
+            snapshots: snapshots || []
         };
 
         if (db) {

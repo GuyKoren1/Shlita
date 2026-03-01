@@ -1427,6 +1427,96 @@ h4 {
     background: var(--accent-bg);
 }
 
+/* ==================== Snapshots ==================== */
+.snapshot-bar {
+    margin-bottom: 16px;
+}
+
+.snapshot-chips {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.snapshot-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    transition: all var(--transition);
+}
+
+.snapshot-chip:hover {
+    border-color: var(--accent);
+    color: var(--text-primary);
+}
+
+.snapshot-chip.active {
+    background: var(--accent-bg);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.snapshot-chip .chip-delete {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    font-size: 14px;
+    line-height: 1;
+    color: var(--text-muted);
+    transition: all var(--transition);
+}
+
+.snapshot-chip .chip-delete:hover {
+    background: var(--danger-bg);
+    color: var(--danger);
+}
+
+.snapshot-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: var(--warning-bg);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: var(--radius-sm);
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: var(--warning);
+    font-weight: 500;
+}
+
+.snapshot-banner .banner-back {
+    padding: 4px 12px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition);
+    margin-right: auto;
+}
+
+.snapshot-banner .banner-back:hover {
+    background: var(--accent-bg);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
 /* ==================== Responsive ==================== */
 @media (max-width: 768px) {
     .sidebar {
