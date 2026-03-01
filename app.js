@@ -806,13 +806,20 @@ function renderPersonnelTable() {
     }
 
     // Header
+    const config = isViewingSnapshot() ? getActiveColumnConfig() : getColumnConfig();
     const thead = document.getElementById('personnelHead');
     let headerHtml = '<tr><th style="width:40px">#</th>';
     columns.forEach(col => {
         const sortClass = state.sortColumn === col.key
             ? (state.sortDirection === 'asc' ? 'sorted-asc' : 'sorted-desc')
             : '';
-        headerHtml += `<th class="${sortClass}" onclick="sortBy('${col.key}')">${col.label}</th>`;
+        const colConfig = config.find(c => c.key === col.key);
+        const isPrimary = colConfig && colConfig.isPrimary;
+        const isDeletable = canEdit && !isPrimary;
+        const deleteBtn = isDeletable
+            ? `<span class="col-delete-btn" onclick="event.stopPropagation(); deleteColumn('${col.key}')" title="מחק עמודה">&times;</span>`
+            : '';
+        headerHtml += `<th class="${sortClass}" onclick="sortBy('${col.key}')">${col.label}${deleteBtn}</th>`;
     });
     if (canEdit) {
         headerHtml += '<th style="width:80px">פעולות</th>';
@@ -1033,6 +1040,44 @@ function addColumn() {
     renderPersonnelTable();
     closeModal('addColumnModal');
     showToast(`עמודה "${name}" נוספה בהצלחה`);
+}
+
+function deleteColumn(colKey) {
+    if (state.accessLevel !== 'admin') return;
+
+    const config = getColumnConfig();
+    const col = config.find(c => c.key === colKey)
+        || state.customColumns.find(c => c.key === colKey);
+    if (!col) return;
+    if (col.isPrimary) {
+        showToast('לא ניתן למחוק עמודה ראשית');
+        return;
+    }
+
+    const label = col.label || col.key;
+    if (!confirm(`למחוק את העמודה "${label}"? הנתונים בעמודה יימחקו.`)) return;
+
+    // Remove from columnConfig
+    if (state.columnConfig) {
+        state.columnConfig = state.columnConfig.filter(c => c.key !== colKey);
+    }
+
+    // Remove from customColumns
+    state.customColumns = state.customColumns.filter(c => c.key !== colKey);
+
+    // Remove data from all personnel
+    state.personnel.forEach(p => { delete p[colKey]; });
+
+    // Reset sort if sorting by deleted column
+    if (state.sortColumn === colKey) {
+        state.sortColumn = null;
+        state.sortDirection = 'asc';
+    }
+
+    saveState();
+    populateFilters();
+    renderPersonnelTable();
+    showToast(`עמודה "${label}" נמחקה`);
 }
 
 // ==================== Activities ====================

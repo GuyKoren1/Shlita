@@ -497,6 +497,27 @@ th:hover {
 th.sorted-asc::after { content: ' ▲'; font-size: 10px; }
 th.sorted-desc::after { content: ' ▼'; font-size: 10px; }
 
+.col-delete-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    font-size: 14px;
+    line-height: 1;
+    color: var(--text-muted);
+    cursor: pointer;
+    margin-right: 4px;
+    transition: all var(--transition);
+    vertical-align: middle;
+}
+
+.col-delete-btn:hover {
+    background: var(--danger-bg);
+    color: var(--danger);
+}
+
 td {
     padding: 10px 14px;
     border-bottom: 1px solid var(--border);
