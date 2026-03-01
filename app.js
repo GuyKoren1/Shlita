@@ -532,11 +532,11 @@ function initApp() {
     renderActivities();
     updateDashboard();
 
-    // Show "Add New Day" button for admin only
-    const addDayBtn = document.getElementById('addNewDayBtn');
-    if (addDayBtn) {
-        addDayBtn.style.display = state.accessLevel === 'admin' ? '' : 'none';
-    }
+    // Show "Add New Day" buttons for admin only
+    ['addNewDayBtn', 'addNewDayCamerasBtn'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.style.display = state.accessLevel === 'admin' ? '' : 'none';
+    });
 }
 
 // ==================== Snapshots ====================
@@ -568,6 +568,14 @@ function getActiveCustomColumns() {
     return state.customColumns;
 }
 
+function getActiveCameras() {
+    if (isViewingSnapshot()) {
+        const snap = state.snapshots.find(s => s.id === state.viewingSnapshotId);
+        return snap && snap.cameras ? snap.cameras : [];
+    }
+    return state.cameras;
+}
+
 function addNewDay() {
     if (state.accessLevel !== 'admin') {
         showToast('אין הרשאה לביצוע פעולה זו');
@@ -575,7 +583,7 @@ function addNewDay() {
     }
 
     const today = new Date().toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric', year: 'numeric' });
-    if (!confirm(`לשמור תמונת מצב של כוח האדם ליום ${today}?`)) return;
+    if (!confirm(`לשמור תמונת מצב ליום ${today}?`)) return;
 
     const snapshot = {
         id: generateId(),
@@ -583,7 +591,8 @@ function addNewDay() {
         label: today,
         personnel: JSON.parse(JSON.stringify(state.personnel)),
         customColumns: JSON.parse(JSON.stringify(state.customColumns)),
-        columnConfig: state.columnConfig ? JSON.parse(JSON.stringify(state.columnConfig)) : null
+        columnConfig: state.columnConfig ? JSON.parse(JSON.stringify(state.columnConfig)) : null,
+        cameras: JSON.parse(JSON.stringify(state.cameras))
     };
 
     state.snapshots.push(snapshot);
@@ -600,6 +609,7 @@ function viewSnapshot(id) {
     }
     populateFilters();
     renderPersonnelTable();
+    renderCameras();
     renderSnapshotSelector();
 }
 
@@ -616,12 +626,18 @@ function deleteSnapshot(id) {
     saveState();
     populateFilters();
     renderPersonnelTable();
+    renderCameras();
     renderSnapshotSelector();
     showToast('תמונת מצב נמחקה');
 }
 
 function renderSnapshotSelector() {
-    const bar = document.getElementById('snapshotBar');
+    _renderSnapshotBar('snapshotBar');
+    _renderSnapshotBar('camerasSnapshotBar');
+}
+
+function _renderSnapshotBar(barId) {
+    const bar = document.getElementById(barId);
     if (!bar) return;
 
     if (state.snapshots.length === 0 && !isViewingSnapshot()) {
@@ -1359,23 +1375,16 @@ function updateDashboard() {
 // ==================== Export ====================
 function exportData() {
     const columns = getAllColumns();
-    let csv = '\uFEFF'; // BOM for Excel Hebrew support
-    csv += columns.map(c => c.label).join(',') + '\n';
+    const headers = columns.map(c => c.label);
+    const rows = state.personnel.map(person =>
+        columns.map(c => (person[c.key] || '').toString())
+    );
 
-    state.personnel.forEach(person => {
-        csv += columns.map(c => {
-            const val = (person[c.key] || '').toString().replace(/"/g, '""');
-            return `"${val}"`;
-        }).join(',') + '\n';
-    });
-
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `כוח_אדם_${new Date().toLocaleDateString('he-IL')}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    ws['!cols'] = headers.map(() => ({ wch: 18 }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'כוח אדם');
+    XLSX.writeFile(wb, `כוח_אדם_${new Date().toLocaleDateString('he-IL')}.xlsx`);
     showToast('קובץ יוצא בהצלחה');
 }
 
@@ -1651,10 +1660,11 @@ function confirmImport() {
 
 // ==================== Cameras ====================
 function renderCameras() {
-    const cameras = state.cameras;
+    const cameras = getActiveCameras();
     if (!cameras || cameras.length === 0) return;
 
-    const isAdmin = state.accessLevel === 'admin';
+    const viewing = isViewingSnapshot();
+    const canEdit = state.accessLevel === 'admin' && !viewing;
     const thead = document.getElementById('camerasHead');
     const tbody = document.getElementById('camerasBody');
 
@@ -1663,7 +1673,7 @@ function renderCameras() {
     cameras.forEach(c => {
         headHtml += `<th>${escapeHtml(c.tank)}</th>`;
     });
-    if (isAdmin) headHtml += '<th></th>';
+    if (canEdit) headHtml += '<th></th>';
     headHtml += '</tr>';
     thead.innerHTML = headHtml;
 
@@ -1672,25 +1682,25 @@ function renderCameras() {
     // Commander row
     bodyHtml += '<tr class="camera-commander-row"><td></td><td style="text-align:right">מפקד</td>';
     cameras.forEach((c, tankIdx) => {
-        if (isAdmin) {
+        if (canEdit) {
             bodyHtml += `<td class="camera-info-cell" ondblclick="editCameraInfoCell(event, ${tankIdx}, 'commander')">${escapeHtml(c.commander)}</td>`;
         } else {
             bodyHtml += `<td>${escapeHtml(c.commander)}</td>`;
         }
     });
-    if (isAdmin) bodyHtml += '<td></td>';
+    if (canEdit) bodyHtml += '<td></td>';
     bodyHtml += '</tr>';
 
     // Source brigade row
     bodyHtml += '<tr class="camera-brigade-row"><td></td><td style="text-align:right">חטיבת מקור</td>';
     cameras.forEach((c, tankIdx) => {
-        if (isAdmin) {
+        if (canEdit) {
             bodyHtml += `<td class="camera-info-cell" ondblclick="editCameraInfoCell(event, ${tankIdx}, 'sourceBrigade')">${escapeHtml(c.sourceBrigade)}</td>`;
         } else {
             bodyHtml += `<td>${escapeHtml(c.sourceBrigade)}</td>`;
         }
     });
-    if (isAdmin) bodyHtml += '<td></td>';
+    if (canEdit) bodyHtml += '<td></td>';
     bodyHtml += '</tr>';
 
     // Equipment rows
@@ -1704,18 +1714,22 @@ function renderCameras() {
             const cellClass = isFaulty ? 'camera-cell faulty' : 'camera-cell';
             const serial = escapeHtml(item.serial);
 
-            bodyHtml += `<td class="${cellClass}" onclick="toggleCameraStatus(${tankIdx}, ${itemIdx})">`;
+            if (canEdit) {
+                bodyHtml += `<td class="${cellClass}" onclick="toggleCameraStatus(${tankIdx}, ${itemIdx})">`;
+            } else {
+                bodyHtml += `<td class="${cellClass}">`;
+            }
             bodyHtml += `<div class="camera-cell-content">`;
             if (serial) {
                 bodyHtml += `<span class="camera-serial">${serial}</span>`;
             }
             bodyHtml += `<span class="camera-status-dot ${dotClass}"></span>`;
-            if (isAdmin) {
+            if (canEdit) {
                 bodyHtml += `<button class="camera-edit-btn" onclick="event.stopPropagation(); editCameraCell(event, ${tankIdx}, ${itemIdx})" title="ערוך מספר סידורי"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>`;
             }
             bodyHtml += `</div></td>`;
         });
-        if (isAdmin) {
+        if (canEdit) {
             bodyHtml += `<td class="camera-actions-cell"><button class="btn-icon delete-row-btn" onclick="deleteCameraRow(${itemIdx})" title="מחק שורה"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td>`;
         }
         bodyHtml += '</tr>';
@@ -1728,7 +1742,7 @@ function renderCameras() {
         const color = faultyCount > 0 ? 'var(--danger)' : 'var(--success)';
         bodyHtml += `<td style="font-weight:700;color:${color}">${faultyCount}</td>`;
     });
-    if (isAdmin) bodyHtml += '<td></td>';
+    if (canEdit) bodyHtml += '<td></td>';
     bodyHtml += '</tr>';
 
     tbody.innerHTML = bodyHtml;
@@ -1736,6 +1750,7 @@ function renderCameras() {
 
 function toggleCameraStatus(tankIdx, itemIdx) {
     if (state.accessLevel !== 'admin') return;
+    if (isViewingSnapshot()) return;
     const item = state.cameras[tankIdx].items[itemIdx];
     item.status = item.status === 'תקין' ? 'תקול' : 'תקין';
     saveState();
@@ -1744,6 +1759,7 @@ function toggleCameraStatus(tankIdx, itemIdx) {
 
 function editCameraCell(event, tankIdx, itemIdx) {
     if (state.accessLevel !== 'admin') return;
+    if (isViewingSnapshot()) return;
     event.stopPropagation();
 
     const td = event.currentTarget.closest('td');
@@ -1778,6 +1794,7 @@ function editCameraCell(event, tankIdx, itemIdx) {
 
 function editCameraInfoCell(event, tankIdx, field) {
     if (state.accessLevel !== 'admin') return;
+    if (isViewingSnapshot()) return;
     event.stopPropagation();
 
     const td = event.currentTarget;
@@ -1811,6 +1828,7 @@ function editCameraInfoCell(event, tankIdx, field) {
 
 function deleteCameraRow(itemIdx) {
     if (state.accessLevel !== 'admin') return;
+    if (isViewingSnapshot()) return;
     const name = state.cameras[0].items[itemIdx].name;
     if (!confirm(`למחוק את ${name}?`)) return;
 
@@ -1829,36 +1847,26 @@ function exportCameras() {
         return;
     }
 
-    let csv = '\uFEFF'; // BOM for Excel Hebrew support
+    const rows = [];
+    rows.push(['ציוד', ...cameras.map(c => c.tank)]);
+    rows.push(['מפקד', ...cameras.map(c => c.commander || '')]);
+    rows.push(['חטיבת מקור', ...cameras.map(c => c.sourceBrigade || '')]);
 
-    // Header row: ציוד | tank names...
-    csv += ['ציוד', ...cameras.map(c => `"${c.tank}"`)].join(',') + '\n';
-
-    // Commander row
-    csv += ['מפקד', ...cameras.map(c => `"${(c.commander || '').replace(/"/g, '""')}"`)].join(',') + '\n';
-
-    // Brigade row
-    csv += ['חטיבת מקור', ...cameras.map(c => `"${(c.sourceBrigade || '').replace(/"/g, '""')}"`)].join(',') + '\n';
-
-    // Equipment rows
     const equipmentCount = cameras[0].items.length;
     for (let i = 0; i < equipmentCount; i++) {
-        const row = [`"${cameras[0].items[i].name}"`];
+        const row = [cameras[0].items[i].name];
         cameras.forEach(cam => {
             const item = cam.items[i];
-            const val = item.serial ? `${item.serial} (${item.status})` : item.status;
-            row.push(`"${val.replace(/"/g, '""')}"`);
+            row.push(item.serial ? `${item.serial} (${item.status})` : item.status);
         });
-        csv += row.join(',') + '\n';
+        rows.push(row);
     }
 
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `צלמים_${new Date().toLocaleDateString('he-IL')}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = rows[0].map(() => ({ wch: 18 }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'צלמים');
+    XLSX.writeFile(wb, `צלמים_${new Date().toLocaleDateString('he-IL')}.xlsx`);
     showToast('קובץ צלמים יוצא בהצלחה');
 }
 
