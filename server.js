@@ -5,14 +5,28 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 'data.json');
+const MONGODB_URI = process.env.MONGODB_URI;
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(__dirname));
 
-// Initialize data file from personnel_data.json if it doesn't exist
-function initDataFile() {
-    if (fs.existsSync(DATA_FILE)) return;
+// --- MongoDB setup (only when MONGODB_URI is set) ---
+let db = null;
 
+function getCollection() {
+    return db.collection('state');
+}
+
+async function connectMongo() {
+    const { MongoClient } = require('mongodb');
+    const client = new MongoClient(MONGODB_URI);
+    await client.connect();
+    db = client.db('shlita');
+    console.log('Connected to MongoDB Atlas');
+}
+
+// --- Seed data helper ---
+function buildSeedData() {
     let personnel = [];
     const personnelFile = path.join(__dirname, 'personnel_data.json');
     if (fs.existsSync(personnelFile)) {
@@ -23,33 +37,60 @@ function initDataFile() {
             ...p
         }));
     }
-
-    const initialData = {
+    return {
         personnel,
         customColumns: [],
         activities: []
     };
-
-    fs.writeFileSync(DATA_FILE, JSON.stringify(initialData, null, 2), 'utf8');
-    console.log('Initialized data.json with', personnel.length, 'personnel records');
 }
 
-// GET /api/data - return all data
-app.get('/api/data', (req, res) => {
+// --- File-based functions (fallback for local dev) ---
+function initDataFile() {
+    if (fs.existsSync(DATA_FILE)) return;
+    const data = buildSeedData();
+    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
+    console.log('Initialized data.json with', data.personnel.length, 'personnel records');
+}
+
+// --- MongoDB-based functions ---
+async function initDataMongo() {
+    const col = getCollection();
+    const existing = await col.findOne({ _id: 'app_state' });
+    if (existing) return;
+    const data = buildSeedData();
+    await col.insertOne({ _id: 'app_state', ...data });
+    console.log('Initialized MongoDB with', data.personnel.length, 'personnel records');
+}
+
+// --- Routes ---
+
+// GET /api/data
+app.get('/api/data', async (req, res) => {
     try {
-        if (!fs.existsSync(DATA_FILE)) {
-            initDataFile();
+        if (db) {
+            const col = getCollection();
+            let doc = await col.findOne({ _id: 'app_state' });
+            if (!doc) {
+                await initDataMongo();
+                doc = await col.findOne({ _id: 'app_state' });
+            }
+            const { _id, ...data } = doc;
+            res.json(data);
+        } else {
+            if (!fs.existsSync(DATA_FILE)) {
+                initDataFile();
+            }
+            const raw = fs.readFileSync(DATA_FILE, 'utf8');
+            res.json(JSON.parse(raw));
         }
-        const raw = fs.readFileSync(DATA_FILE, 'utf8');
-        res.json(JSON.parse(raw));
     } catch (err) {
         console.error('Error reading data:', err);
         res.status(500).json({ error: 'Failed to read data' });
     }
 });
 
-// POST /api/data - save all data
-app.post('/api/data', (req, res) => {
+// POST /api/data
+app.post('/api/data', async (req, res) => {
     try {
         const { personnel, customColumns, activities, columnConfig, cameras } = req.body;
         const data = {
@@ -59,7 +100,13 @@ app.post('/api/data', (req, res) => {
             columnConfig: columnConfig || null,
             cameras: cameras || []
         };
-        fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
+
+        if (db) {
+            const col = getCollection();
+            await col.replaceOne({ _id: 'app_state' }, { _id: 'app_state', ...data }, { upsert: true });
+        } else {
+            fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
+        }
         res.json({ ok: true });
     } catch (err) {
         console.error('Error saving data:', err);
@@ -67,15 +114,24 @@ app.post('/api/data', (req, res) => {
     }
 });
 
-// POST /api/reset - reset to initial personnel data
-app.post('/api/reset', (req, res) => {
+// POST /api/reset
+app.post('/api/reset', async (req, res) => {
     try {
-        if (fs.existsSync(DATA_FILE)) {
-            fs.unlinkSync(DATA_FILE);
+        if (db) {
+            const col = getCollection();
+            await col.deleteOne({ _id: 'app_state' });
+            await initDataMongo();
+            const doc = await col.findOne({ _id: 'app_state' });
+            const { _id, ...data } = doc;
+            res.json(data);
+        } else {
+            if (fs.existsSync(DATA_FILE)) {
+                fs.unlinkSync(DATA_FILE);
+            }
+            initDataFile();
+            const raw = fs.readFileSync(DATA_FILE, 'utf8');
+            res.json(JSON.parse(raw));
         }
-        initDataFile();
-        const raw = fs.readFileSync(DATA_FILE, 'utf8');
-        res.json(JSON.parse(raw));
     } catch (err) {
         console.error('Error resetting data:', err);
         res.status(500).json({ error: 'Failed to reset data' });
@@ -87,8 +143,24 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-initDataFile();
+// --- Startup ---
+async function start() {
+    if (MONGODB_URI) {
+        try {
+            await connectMongo();
+            await initDataMongo();
+        } catch (err) {
+            console.error('MongoDB connection failed:', err);
+            process.exit(1);
+        }
+    } else {
+        console.log('No MONGODB_URI set — using file-based storage (data.json)');
+        initDataFile();
+    }
 
-app.listen(PORT, () => {
-    console.log(`Shlita server running on http://localhost:${PORT}`);
-});
+    app.listen(PORT, () => {
+        console.log(`Shlita server running on http://localhost:${PORT}`);
+    });
+}
+
+start();
