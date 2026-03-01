@@ -1368,9 +1368,23 @@ function updateDashboard() {
     document.getElementById('totalActivities').textContent = state.activities.length;
 
     const dashConfig = getColumnConfig();
-    const groupCol = dashConfig.find(c => c.isFilter) || dashConfig[1] || dashConfig[0];
+    const filterCols = dashConfig.filter(c => c.isFilter);
+
+    // Populate group-by dropdown
+    const dropdown = document.getElementById('dashboardGroupBy');
+    const prevValue = dropdown.value;
+    dropdown.innerHTML = filterCols.map(c =>
+        `<option value="${c.key}"${c.key === prevValue ? ' selected' : ''}>${c.label}</option>`
+    ).join('');
+    if (!prevValue && filterCols.length > 0) {
+        dropdown.value = filterCols[0].key;
+    }
+
+    const selectedKey = dropdown.value;
+    const groupCol = filterCols.find(c => c.key === selectedKey) || filterCols[0] || dashConfig[0];
     const groups = [...new Set(state.personnel.map(p => p[groupCol.key]).filter(Boolean))];
     document.getElementById('totalTeams').textContent = groups.length;
+    document.getElementById('teamsLabel').textContent = groupCol.label;
 
     // Avg completion
     if (state.activities.length > 0) {
@@ -1405,7 +1419,7 @@ function updateDashboard() {
         recentContainer.innerHTML = html;
     }
 
-    // Group breakdown (uses first filter column)
+    // Group breakdown (uses selected filter column)
     const teamContainer = document.getElementById('teamBreakdown');
     const groupCounts = {};
     state.personnel.forEach(p => {

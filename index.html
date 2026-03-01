@@ -193,7 +193,7 @@
                         </div>
                         <div class="stat-info">
                             <span class="stat-value" id="totalTeams">0</span>
-                            <span class="stat-label">צוותים</span>
+                            <span class="stat-label" id="teamsLabel">צוותים</span>
                         </div>
                     </div>
                     <div class="stat-card">
@@ -213,7 +213,10 @@
                 </div>
 
                 <div class="dashboard-section">
-                    <h3>חלוקה לפי צוותים</h3>
+                    <div class="dashboard-section-header">
+                        <h3>חלוקה לפי</h3>
+                        <select id="dashboardGroupBy" onchange="updateDashboard()"></select>
+                    </div>
                     <div id="teamBreakdown" class="team-breakdown"></div>
                 </div>
             </div>
