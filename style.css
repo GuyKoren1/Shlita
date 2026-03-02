@@ -1968,6 +1968,7 @@ h4 {
 
 /* ==================== Responsive ==================== */
 @media (max-width: 768px) {
+    /* --- Sidebar & Nav --- */
     .hamburger-btn {
         display: flex;
         align-items: center;
@@ -2011,29 +2012,204 @@ h4 {
         padding: 12px 16px;
     }
 
+    /* --- Content & Layout --- */
     .content {
-        padding: 16px;
-        padding-top: 56px;
+        padding: 12px;
+        padding-top: 52px;
     }
 
     .view-header {
         flex-direction: column;
-        gap: 12px;
+        gap: 10px;
         align-items: flex-start;
     }
+
+    .view-header h2 {
+        font-size: 20px;
+    }
+
+    .view-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        width: 100%;
+    }
+
+    .view-actions .btn {
+        font-size: 12px;
+        padding: 7px 10px;
+    }
+
+    .view-actions .btn svg {
+        display: none;
+    }
+
+    /* --- Filters --- */
     .filters-bar {
         flex-direction: column;
     }
+
     .filter-group input,
     .filter-group select {
         width: 100%;
     }
+
+    .fault-filters-bar {
+        flex-direction: column;
+    }
+
+    .fault-filters-bar input {
+        max-width: none;
+        width: 100%;
+    }
+
+    .fault-filters-bar select {
+        width: 100%;
+        min-width: unset;
+    }
+
+    /* --- Bulk Actions --- */
+    .bulk-actions-bar {
+        flex-wrap: wrap;
+        padding: 8px 12px;
+        gap: 6px;
+    }
+
+    /* --- Tables --- */
+    .table-container {
+        max-height: calc(100vh - 280px);
+    }
+
+    table {
+        font-size: 12px;
+    }
+
+    th {
+        padding: 8px 10px;
+        font-size: 11px;
+    }
+
+    td {
+        padding: 8px 10px;
+        max-width: 140px;
+    }
+
+    /* --- Cameras Table --- */
+    .cameras-table-container table {
+        min-width: 600px;
+    }
+
+    .cameras-table-container th,
+    .cameras-table-container td {
+        padding: 6px 4px;
+        font-size: 11px;
+    }
+
+    .camera-cell {
+        min-width: 70px;
+        padding: 4px !important;
+    }
+
+    .camera-serial {
+        font-size: 10px;
+    }
+
+    /* --- Fault Tracking --- */
+    .fault-stats-bar {
+        gap: 8px;
+    }
+
+    .fault-stat {
+        padding: 8px 12px;
+        min-width: 0;
+        flex: 1;
+    }
+
+    .fault-stat-value {
+        font-size: 20px;
+    }
+
+    .fault-stat-label {
+        font-size: 11px;
+    }
+
+    .vehicle-card-header {
+        flex-wrap: wrap;
+        padding: 12px 14px;
+        gap: 8px;
+    }
+
+    .vehicle-card-actions {
+        width: 100%;
+        margin-right: 0;
+    }
+
+    .vehicle-card-badges {
+        flex-wrap: wrap;
+    }
+
+    .fault-table th,
+    .fault-table td {
+        padding: 8px 8px;
+        font-size: 12px;
+    }
+
+    .fault-table {
+        display: block;
+        overflow-x: auto;
+    }
+
+    /* --- Modals --- */
     .modal {
         width: 95vw !important;
         max-height: 90vh;
+        margin: 0 auto;
     }
+
+    .modal-header {
+        padding: 14px 16px;
+    }
+
+    .modal-body {
+        padding: 16px;
+    }
+
+    .modal-footer {
+        padding: 12px 16px;
+        flex-wrap: wrap;
+    }
+
     .form-row {
         grid-template-columns: 1fr;
+    }
+
+    /* --- Dashboard --- */
+    .dashboard-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 10px;
+    }
+
+    .stat-card {
+        padding: 14px;
+        gap: 10px;
+    }
+
+    .stat-icon {
+        width: 42px;
+        height: 42px;
+    }
+
+    .stat-icon svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    .stat-value {
+        font-size: 22px;
+    }
+
+    .stat-label {
+        font-size: 12px;
     }
 
     .dashboard-charts {
@@ -2041,6 +2217,86 @@ h4 {
     }
 
     .chart-container {
-        height: 280px;
+        height: 260px;
+    }
+
+    .team-breakdown {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 8px;
+    }
+
+    /* --- Activities --- */
+    .activity-card {
+        padding: 14px;
+    }
+
+    .activity-card-header h3 {
+        font-size: 14px;
+    }
+
+    .activity-card-meta {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .detail-filters {
+        flex-direction: column;
+    }
+
+    /* --- Snapshot bar --- */
+    .snapshot-chips {
+        gap: 6px;
+    }
+
+    .snapshot-chip {
+        padding: 4px 10px;
+        font-size: 12px;
+    }
+}
+
+/* ==================== Ultra-small phones ==================== */
+@media (max-width: 420px) {
+    .content {
+        padding: 8px;
+        padding-top: 48px;
+    }
+
+    .view-header h2 {
+        font-size: 18px;
+    }
+
+    .view-actions .btn {
+        font-size: 11px;
+        padding: 6px 8px;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .stat-card {
+        padding: 10px;
+        gap: 8px;
+    }
+
+    .stat-value {
+        font-size: 18px;
+    }
+
+    .fault-stat {
+        padding: 6px 10px;
+    }
+
+    .fault-stat-value {
+        font-size: 18px;
+    }
+
+    .vehicle-card-header h3 {
+        font-size: 14px;
+    }
+
+    .modal-header h3 {
+        font-size: 16px;
     }
 }
