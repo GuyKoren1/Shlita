@@ -305,18 +305,36 @@ function exportFaultsXLSX() {
     showToast('קובץ XLSX יוצא בהצלחה');
 }
 
-function exportFaultsPDF() {
+let _pdfFontCache = null;
+
+async function _loadHebrewFont() {
+    if (_pdfFontCache) return _pdfFontCache;
+    const resp = await fetch('https://fonts.gstatic.com/s/rubik/v31/iJWZBXyIfDnIV5PNhY1KTN7Z-Yh-B4iFVUUw.ttf');
+    const buf = await resp.arrayBuffer();
+    const bytes = new Uint8Array(buf);
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+    _pdfFontCache = btoa(binary);
+    return _pdfFontCache;
+}
+
+function _reverseHebrew(text) {
+    if (!text) return text;
+    return text.split('').reverse().join('');
+}
+
+async function exportFaultsPDF() {
     const records = getActiveFaultRecords();
     const rows = [];
     records.forEach(vehicle => {
         vehicle.faults.forEach(fault => {
             rows.push([
-                fault.resolved ? 'טופלה' : 'פתוחה',
-                fault.critical ? 'Yes' : '',
+                _reverseHebrew(fault.resolved ? 'טופלה' : 'פתוחה'),
+                fault.critical ? _reverseHebrew('כן') : '',
                 getDaysOpen(fault.reportDate, fault.closedDate).toString(),
                 formatDateHe(fault.reportDate),
-                fault.title,
-                vehicle.name
+                _reverseHebrew(fault.title),
+                _reverseHebrew(vehicle.name)
             ]);
         });
     });
@@ -326,22 +344,37 @@ function exportFaultsPDF() {
         return;
     }
 
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ orientation: 'landscape' });
+    try {
+        showToast('מייצר PDF...');
+        const fontBase64 = await _loadHebrewFont();
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'landscape' });
 
-    // Load Hebrew font if available, otherwise use default
-    doc.setFont('helvetica');
-    doc.setFontSize(16);
-    doc.text('Fault Tracking Report', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+        doc.addFileToVFS('Rubik-Regular.ttf', fontBase64);
+        doc.addFont('Rubik-Regular.ttf', 'Rubik', 'normal');
+        doc.setFont('Rubik');
+        doc.setFontSize(18);
+        doc.text(_reverseHebrew('דוח מעקב תקלות כלים'), doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
 
-    doc.autoTable({
-        head: [['Status', 'Critical', 'Days Open', 'Report Date', 'Fault', 'Vehicle']],
-        body: rows,
-        startY: 25,
-        styles: { halign: 'center', fontSize: 10 },
-        headStyles: { fillColor: [79, 140, 255] }
-    });
+        doc.autoTable({
+            head: [[
+                _reverseHebrew('סטטוס'),
+                _reverseHebrew('קריטי'),
+                _reverseHebrew('ימים'),
+                _reverseHebrew('תאריך דיווח'),
+                _reverseHebrew('תקלה'),
+                _reverseHebrew('כלי')
+            ]],
+            body: rows,
+            startY: 25,
+            styles: { halign: 'center', fontSize: 10, font: 'Rubik' },
+            headStyles: { fillColor: [79, 140, 255], font: 'Rubik' }
+        });
 
-    doc.save('fault_tracking.pdf');
-    showToast('קובץ PDF יוצא בהצלחה');
+        doc.save('fault_tracking.pdf');
+        showToast('קובץ PDF יוצא בהצלחה');
+    } catch (err) {
+        console.error('PDF export error:', err);
+        showToast('שגיאה בייצוא PDF');
+    }
 }

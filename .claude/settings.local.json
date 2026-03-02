@@ -3,7 +3,9 @@
     "allow": [
       "WebSearch",
       "WebFetch(domain:cdnjs.cloudflare.com)",
-      "WebFetch(domain:cdn.jsdelivr.net)"
+      "WebFetch(domain:cdn.jsdelivr.net)",
+      "WebFetch(domain:fonts.gstatic.com)",
+      "WebFetch(domain:gwfh.mranftl.com)"
     ]
   }
 }
