@@ -1,12 +1,21 @@
 // ==================== Activities ====================
+let _editingActivityId = null;
+
 function openNewActivityModal() {
     if (state.accessLevel !== 'admin') {
         showToast('אין הרשאה לביצוע פעולה זו');
         return;
     }
+    _editingActivityId = null;
+    selectedParticipants = new Set();
+
     document.getElementById('activityName').value = '';
     document.getElementById('activityDescription').value = '';
     document.getElementById('activityDeadline').value = '';
+
+    // Update modal title and button for create mode
+    document.querySelector('#newActivityModal .modal-header h3').textContent = 'פעילות חדשה';
+    document.getElementById('activitySaveBtn').textContent = 'צור פעילות';
 
     // Reset dynamic filters
     const actSearch = document.getElementById('actSearchInput');
@@ -17,6 +26,41 @@ function openNewActivityModal() {
     });
 
     renderActivityParticipants();
+    openModal('newActivityModal');
+}
+
+function editActivity(activityId) {
+    if (state.accessLevel !== 'admin') {
+        showToast('אין הרשאה לביצוע פעולה זו');
+        return;
+    }
+    const activity = state.activities.find(a => a.id === activityId);
+    if (!activity) return;
+
+    _editingActivityId = activityId;
+
+    // Pre-fill form
+    document.getElementById('activityName').value = activity.name;
+    document.getElementById('activityDescription').value = activity.description || '';
+    document.getElementById('activityDeadline').value = activity.deadline || '';
+
+    // Update modal title and button for edit mode
+    document.querySelector('#newActivityModal .modal-header h3').textContent = 'עריכת פעילות';
+    document.getElementById('activitySaveBtn').textContent = 'שמור שינויים';
+
+    // Pre-select current participants
+    selectedParticipants = new Set(activity.participants.map(p => p.personId));
+
+    // Reset dynamic filters
+    const actSearch = document.getElementById('actSearchInput');
+    if (actSearch) actSearch.value = '';
+    getColumnConfig().filter(c => c.isFilter).forEach(col => {
+        const el = document.getElementById('actFilter_' + col.key);
+        if (el) el.value = '';
+    });
+
+    renderActivityParticipants();
+    closeModal('activityDetailModal');
     openModal('newActivityModal');
 }
 
@@ -102,7 +146,7 @@ function updateSelectedCount() {
     document.getElementById('selectedCount').textContent = `${selectedParticipants.size} נבחרו`;
 }
 
-function createActivity() {
+function saveActivity() {
     const name = document.getElementById('activityName').value.trim();
     if (!name) {
         showToast('יש להזין שם פעילות');
@@ -113,26 +157,56 @@ function createActivity() {
         return;
     }
 
-    const activity = {
-        id: generateId(),
-        name,
-        description: document.getElementById('activityDescription').value.trim(),
-        deadline: document.getElementById('activityDeadline').value,
-        createdAt: new Date().toISOString(),
-        participants: Array.from(selectedParticipants).map(id => ({
-            personId: id,
-            completed: false,
-            completedAt: null
-        }))
-    };
+    if (_editingActivityId) {
+        // Edit existing activity
+        const activity = state.activities.find(a => a.id === _editingActivityId);
+        if (!activity) return;
 
-    state.activities.push(activity);
-    selectedParticipants = new Set();
-    saveState();
-    renderActivities();
-    closeModal('newActivityModal');
-    showToast('פעילות נוצרה בהצלחה');
+        activity.name = name;
+        activity.description = document.getElementById('activityDescription').value.trim();
+        activity.deadline = document.getElementById('activityDeadline').value;
+
+        // Preserve completion status for existing participants, add new ones
+        const existingMap = {};
+        activity.participants.forEach(p => { existingMap[p.personId] = p; });
+
+        activity.participants = Array.from(selectedParticipants).map(id => {
+            if (existingMap[id]) return existingMap[id];
+            return { personId: id, completed: false, completedAt: null };
+        });
+
+        _editingActivityId = null;
+        selectedParticipants = new Set();
+        saveState();
+        renderActivities();
+        closeModal('newActivityModal');
+        showToast('פעילות עודכנה בהצלחה');
+    } else {
+        // Create new activity
+        const activity = {
+            id: generateId(),
+            name,
+            description: document.getElementById('activityDescription').value.trim(),
+            deadline: document.getElementById('activityDeadline').value,
+            createdAt: new Date().toISOString(),
+            participants: Array.from(selectedParticipants).map(id => ({
+                personId: id,
+                completed: false,
+                completedAt: null
+            }))
+        };
+
+        state.activities.push(activity);
+        selectedParticipants = new Set();
+        saveState();
+        renderActivities();
+        closeModal('newActivityModal');
+        showToast('פעילות נוצרה בהצלחה');
+    }
 }
+
+// Keep backward compat alias
+function createActivity() { saveActivity(); }
 
 function renderActivities() {
     const container = document.getElementById('activitiesList');
@@ -191,6 +265,13 @@ function openActivityDetail(activityId) {
 
     document.getElementById('detailSearchInput').value = '';
     document.getElementById('detailFilterStatus').value = '';
+
+    // Show edit/delete buttons only for admin
+    const isAdmin = state.accessLevel === 'admin';
+    const editBtn = document.getElementById('editActivityBtn');
+    if (editBtn) editBtn.style.display = isAdmin ? '' : 'none';
+    const deleteBtn = document.querySelector('#activityDetailModal .btn-danger');
+    if (deleteBtn) deleteBtn.style.display = isAdmin ? '' : 'none';
 
     updateActivityProgress(activity);
     renderDetailParticipants(activity);

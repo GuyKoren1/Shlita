@@ -422,6 +422,41 @@ body {
     margin-bottom: 12px;
 }
 
+/* Bulk Actions Bar */
+.bulk-actions-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: var(--accent-bg);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    margin-bottom: 12px;
+    animation: fadeIn 0.2s ease;
+}
+
+.bulk-actions-bar span {
+    font-weight: 600;
+    color: var(--accent);
+    font-size: 14px;
+    margin-left: 8px;
+}
+
+.btn-sm {
+    padding: 5px 12px;
+    font-size: 12px;
+}
+
+tr.bulk-selected {
+    background: var(--accent-bg) !important;
+}
+
+.bulk-checkbox {
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+}
+
 .filter-group input,
 .filter-group select {
     padding: 8px 12px;

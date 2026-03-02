@@ -1,3 +1,94 @@
+// ==================== Bulk Selection ====================
+let _bulkSelected = new Set();
+
+function toggleBulkSelect(personId) {
+    if (_bulkSelected.has(personId)) {
+        _bulkSelected.delete(personId);
+    } else {
+        _bulkSelected.add(personId);
+    }
+    updateBulkUI();
+}
+
+function toggleBulkSelectAll() {
+    const filtered = getFilteredPersonnel();
+    const allSelected = filtered.every(p => _bulkSelected.has(p.id));
+    if (allSelected) {
+        filtered.forEach(p => _bulkSelected.delete(p.id));
+    } else {
+        filtered.forEach(p => _bulkSelected.add(p.id));
+    }
+    renderPersonnelTable();
+}
+
+function clearBulkSelection() {
+    _bulkSelected = new Set();
+    updateBulkUI();
+    renderPersonnelTable();
+}
+
+function updateBulkUI() {
+    const bar = document.getElementById('bulkActionsBar');
+    const countEl = document.getElementById('bulkSelectedCount');
+    if (_bulkSelected.size > 0) {
+        bar.classList.remove('hidden');
+        countEl.textContent = `${_bulkSelected.size} נבחרו`;
+    } else {
+        bar.classList.add('hidden');
+    }
+    // Update checkboxes without full re-render
+    document.querySelectorAll('.bulk-checkbox').forEach(cb => {
+        cb.checked = _bulkSelected.has(cb.dataset.id);
+    });
+    // Update select-all checkbox
+    const selectAllCb = document.getElementById('bulkSelectAll');
+    if (selectAllCb) {
+        const filtered = getFilteredPersonnel();
+        selectAllCb.checked = filtered.length > 0 && filtered.every(p => _bulkSelected.has(p.id));
+    }
+}
+
+function bulkDeleteSelected() {
+    if (_bulkSelected.size === 0) return;
+    if (!confirm(`למחוק ${_bulkSelected.size} שורות?`)) return;
+
+    state.personnel = state.personnel.filter(p => !_bulkSelected.has(p.id));
+    _bulkSelected = new Set();
+    saveState();
+    populateFilters();
+    renderPersonnelTable();
+    updateBulkUI();
+    showToast('נמחקו בהצלחה');
+}
+
+function bulkEditSelected() {
+    if (_bulkSelected.size === 0) return;
+    const columns = getAllColumns();
+    const select = document.getElementById('bulkEditField');
+    select.innerHTML = columns.map(c => `<option value="${c.key}">${escapeHtml(c.label)}</option>`).join('');
+    document.getElementById('bulkEditValue').value = '';
+    openModal('bulkEditModal');
+}
+
+function confirmBulkEdit() {
+    const field = document.getElementById('bulkEditField').value;
+    const value = document.getElementById('bulkEditValue').value.trim();
+
+    state.personnel.forEach(p => {
+        if (_bulkSelected.has(p.id)) {
+            p[field] = value;
+        }
+    });
+
+    _bulkSelected = new Set();
+    saveState();
+    populateFilters();
+    renderPersonnelTable();
+    updateBulkUI();
+    closeModal('bulkEditModal');
+    showToast('עודכנו בהצלחה');
+}
+
 // ==================== Personnel Table ====================
 function getColumnConfig() {
     return state.columnConfig || DEFAULT_COLUMN_CONFIG;
@@ -40,7 +131,12 @@ function renderPersonnelTable() {
     // Header
     const config = isViewingSnapshot() ? getActiveColumnConfig() : getColumnConfig();
     const thead = document.getElementById('personnelHead');
-    let headerHtml = '<tr><th style="width:40px">#</th>';
+    let headerHtml = '<tr>';
+    if (canEdit) {
+        const allChecked = filtered.length > 0 && filtered.every(p => _bulkSelected.has(p.id));
+        headerHtml += `<th style="width:36px"><input type="checkbox" id="bulkSelectAll" ${allChecked ? 'checked' : ''} onchange="toggleBulkSelectAll()"></th>`;
+    }
+    headerHtml += '<th style="width:40px">#</th>';
     columns.forEach(col => {
         const sortClass = state.sortColumn === col.key
             ? (state.sortDirection === 'asc' ? 'sorted-asc' : 'sorted-desc')
@@ -61,13 +157,18 @@ function renderPersonnelTable() {
 
     // Body
     const tbody = document.getElementById('personnelBody');
+    const colSpan = columns.length + (canEdit ? 3 : 1);
     if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="${columns.length + 2}" style="text-align:center;padding:40px;color:var(--text-muted)">לא נמצאו תוצאות</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="${colSpan}" style="text-align:center;padding:40px;color:var(--text-muted)">לא נמצאו תוצאות</td></tr>`;
     } else {
         let bodyHtml = '';
         filtered.forEach((person, idx) => {
             const globalIdx = activePersonnel.indexOf(person);
-            bodyHtml += `<tr>`;
+            const isSelected = _bulkSelected.has(person.id);
+            bodyHtml += `<tr class="${isSelected ? 'bulk-selected' : ''}">`;
+            if (canEdit) {
+                bodyHtml += `<td><input type="checkbox" class="bulk-checkbox" data-id="${person.id}" ${isSelected ? 'checked' : ''} onchange="toggleBulkSelect('${person.id}')"></td>`;
+            }
             bodyHtml += `<td style="color:var(--text-muted)">${idx + 1}</td>`;
             columns.forEach(col => {
                 const val = person[col.key] || '';
@@ -89,6 +190,9 @@ function renderPersonnelTable() {
         });
         tbody.innerHTML = bodyHtml;
     }
+
+    // Update bulk UI bar
+    updateBulkUI();
 
     // Count
     document.getElementById('personnelCount').textContent = `${filtered.length} / ${activePersonnel.length}`;

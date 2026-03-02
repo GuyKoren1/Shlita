@@ -109,6 +109,14 @@
                 <!-- Filters (generated dynamically) -->
                 <div id="filtersContainer" class="filters-bar"></div>
 
+                <!-- Bulk Actions Bar -->
+                <div id="bulkActionsBar" class="bulk-actions-bar hidden">
+                    <span id="bulkSelectedCount">0 נבחרו</span>
+                    <button class="btn btn-sm btn-secondary" onclick="bulkEditSelected()">ערוך שדה</button>
+                    <button class="btn btn-sm btn-danger" onclick="bulkDeleteSelected()">מחק נבחרים</button>
+                    <button class="btn btn-sm btn-ghost" onclick="clearBulkSelection()">בטל בחירה</button>
+                </div>
+
                 <!-- Table -->
                 <div class="table-container">
                     <table id="personnelTable">
@@ -258,6 +266,30 @@
         </div>
     </div>
 
+    <!-- Modal: Bulk Edit -->
+    <div id="bulkEditModal" class="modal-overlay hidden">
+        <div class="modal modal-sm">
+            <div class="modal-header">
+                <h3>עריכה מרובה</h3>
+                <button class="modal-close" onclick="closeModal('bulkEditModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>בחר שדה</label>
+                    <select id="bulkEditField"></select>
+                </div>
+                <div class="form-group">
+                    <label>ערך חדש</label>
+                    <input type="text" id="bulkEditValue" placeholder="הזן ערך חדש">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('bulkEditModal')">ביטול</button>
+                <button class="btn btn-primary" onclick="confirmBulkEdit()">עדכן</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal: Add Column -->
     <div id="addColumnModal" class="modal-overlay hidden">
         <div class="modal modal-sm">
@@ -323,7 +355,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-ghost" onclick="closeModal('newActivityModal')">ביטול</button>
-                <button class="btn btn-primary" onclick="createActivity()">צור פעילות</button>
+                <button class="btn btn-primary" id="activitySaveBtn" onclick="saveActivity()">צור פעילות</button>
             </div>
         </div>
     </div>
@@ -370,6 +402,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-danger" onclick="deleteCurrentActivity()">מחק פעילות</button>
+                <button class="btn btn-primary" onclick="editActivity(state.currentActivityId)" id="editActivityBtn">ערוך פעילות</button>
                 <button class="btn btn-ghost" onclick="closeModal('activityDetailModal')">סגור</button>
             </div>
         </div>
