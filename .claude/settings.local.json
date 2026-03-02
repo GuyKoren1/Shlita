@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "WebSearch"
+      "WebSearch",
+      "WebFetch(domain:cdnjs.cloudflare.com)",
+      "WebFetch(domain:cdn.jsdelivr.net)"
     ]
   }
 }
