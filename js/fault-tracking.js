@@ -320,7 +320,9 @@ async function _loadHebrewFont() {
 
 function _reverseHebrew(text) {
     if (!text) return text;
-    return text.split('').reverse().join('');
+    // Reverse whole string for RTL, then re-reverse number/Latin runs to keep them LTR
+    const reversed = text.split('').reverse().join('');
+    return reversed.replace(/[0-9A-Za-z./\-:]+/g, m => m.split('').reverse().join(''));
 }
 
 async function exportFaultsPDF() {
