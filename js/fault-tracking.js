@@ -19,9 +19,33 @@ function renderFaultTracking() {
         return;
     }
 
-    let html = '';
+    // Stats summary
+    const allFaults = records.flatMap(v => v.faults);
+    const totalOpen = allFaults.filter(f => !f.resolved).length;
+    const totalCritical = allFaults.filter(f => !f.resolved && f.critical).length;
+    const totalResolved = allFaults.filter(f => f.resolved).length;
+
+    let html = `<div class="fault-stats-bar">
+        <div class="fault-stat">
+            <span class="fault-stat-value">${records.length}</span>
+            <span class="fault-stat-label">כלים</span>
+        </div>
+        <div class="fault-stat">
+            <span class="fault-stat-value fault-stat-open">${totalOpen}</span>
+            <span class="fault-stat-label">תקלות פתוחות</span>
+        </div>
+        <div class="fault-stat">
+            <span class="fault-stat-value fault-stat-critical">${totalCritical}</span>
+            <span class="fault-stat-label">קריטיות</span>
+        </div>
+        <div class="fault-stat">
+            <span class="fault-stat-value fault-stat-resolved">${totalResolved}</span>
+            <span class="fault-stat-label">טופלו</span>
+        </div>
+    </div>`;
     records.forEach(vehicle => {
         const openFaults = vehicle.faults.filter(f => !f.resolved);
+        const criticalOpen = openFaults.filter(f => f.critical).length;
         const closedFaults = vehicle.faults.filter(f => f.resolved);
         const sortedFaults = [...openFaults, ...closedFaults];
 
@@ -30,6 +54,7 @@ function renderFaultTracking() {
                 <h3>${escapeHtml(vehicle.name)}</h3>
                 <div class="vehicle-card-badges">
                     <span class="count-badge">${openFaults.length} פתוחות</span>
+                    ${criticalOpen > 0 ? `<span class="count-badge critical-badge">${criticalOpen} קריטיות</span>` : ''}
                     ${closedFaults.length > 0 ? `<span class="count-badge resolved-badge">${closedFaults.length} טופלו</span>` : ''}
                 </div>
                 ${isAdmin && !isSnapshot ? `<div class="vehicle-card-actions">
@@ -53,10 +78,12 @@ function renderFaultTracking() {
             sortedFaults.forEach(fault => {
                 const days = getDaysOpen(fault.reportDate, fault.closedDate);
                 const resolvedClass = fault.resolved ? 'fault-resolved' : '';
+                const criticalClass = !fault.resolved && fault.critical ? 'fault-critical-row' : '';
                 const daysBadgeClass = fault.resolved ? 'days-resolved' : days >= 14 ? 'days-red' : days >= 7 ? 'days-yellow' : 'days-green';
+                const criticalIcon = fault.critical ? '<span class="critical-icon" title="קריטי">&#9888;</span> ' : '';
 
-                html += `<tr class="${resolvedClass}" onclick="openFaultDetail('${vehicle.id}', '${fault.id}')" style="cursor:pointer">
-                    <td class="fault-title-cell">${escapeHtml(fault.title)}</td>
+                html += `<tr class="${resolvedClass} ${criticalClass}" onclick="openFaultDetail('${vehicle.id}', '${fault.id}')" style="cursor:pointer">
+                    <td class="fault-title-cell">${criticalIcon}${escapeHtml(fault.title)}</td>
                     <td>${formatDateHe(fault.reportDate)}</td>
                     <td><span class="days-badge ${daysBadgeClass}">${days} ימים</span></td>
                     <td>${fault.resolved
@@ -64,6 +91,7 @@ function renderFaultTracking() {
                         : `<span class="fault-status-badge open">פתוחה</span>`}</td>
                     ${isAdmin && !isSnapshot ? `<td class="fault-actions" onclick="event.stopPropagation()">
                         <button title="ערוך" onclick="openEditFaultModal('${vehicle.id}', '${fault.id}')">&#9998;</button>
+                        <button title="${fault.critical ? 'הסר קריטי' : 'סמן קריטי'}" class="${fault.critical ? 'critical-active' : ''}" onclick="toggleFaultCritical('${vehicle.id}', '${fault.id}')">&#9888;</button>
                         <button title="${fault.resolved ? 'פתח מחדש' : 'סמן טופלה'}" onclick="toggleFaultResolved('${vehicle.id}', '${fault.id}')">${fault.resolved ? '&#8634;' : '&#10003;'}</button>
                     </td>` : ''}
                 </tr>`;
@@ -129,6 +157,7 @@ function openAddFaultModal(vehicleId) {
     document.getElementById('faultTitleInput').value = '';
     document.getElementById('faultDescInput').value = '';
     document.getElementById('faultDateInput').value = new Date().toISOString().split('T')[0];
+    document.getElementById('faultCriticalInput').checked = false;
     openModal('faultModal');
 }
 
@@ -144,6 +173,7 @@ function openEditFaultModal(vehicleId, faultId) {
     document.getElementById('faultTitleInput').value = fault.title;
     document.getElementById('faultDescInput').value = fault.description || '';
     document.getElementById('faultDateInput').value = fault.reportDate ? fault.reportDate.split('T')[0] : '';
+    document.getElementById('faultCriticalInput').checked = !!fault.critical;
     openModal('faultModal');
 }
 
@@ -151,6 +181,7 @@ function saveFault() {
     const title = document.getElementById('faultTitleInput').value.trim();
     const description = document.getElementById('faultDescInput').value.trim();
     const dateVal = document.getElementById('faultDateInput').value;
+    const critical = document.getElementById('faultCriticalInput').checked;
     if (!title) { showToast('יש להזין כותרת תקלה'); return; }
     if (!dateVal) { showToast('יש להזין תאריך דיווח'); return; }
 
@@ -164,6 +195,7 @@ function saveFault() {
         fault.title = title;
         fault.description = description;
         fault.reportDate = new Date(dateVal).toISOString();
+        fault.critical = critical;
     } else {
         // New fault
         vehicle.faults.push({
@@ -172,7 +204,8 @@ function saveFault() {
             description,
             reportDate: new Date(dateVal).toISOString(),
             closedDate: null,
-            resolved: false
+            resolved: false,
+            critical
         });
     }
 
@@ -180,6 +213,18 @@ function saveFault() {
     closeModal('faultModal');
     renderFaultTracking();
     showToast(_faultEditFaultId ? 'תקלה עודכנה' : 'תקלה נוספה');
+}
+
+function toggleFaultCritical(vehicleId, faultId) {
+    const vehicle = state.faultRecords.find(v => v.id === vehicleId);
+    if (!vehicle) return;
+    const fault = vehicle.faults.find(f => f.id === faultId);
+    if (!fault) return;
+
+    fault.critical = !fault.critical;
+    saveState();
+    renderFaultTracking();
+    showToast(fault.critical ? 'תקלה סומנה כקריטית' : 'סימון קריטי הוסר');
 }
 
 function toggleFaultResolved(vehicleId, faultId) {
@@ -211,6 +256,13 @@ function openFaultDetail(vehicleId, faultId) {
     document.getElementById('faultDetailStatus').textContent = fault.resolved ? 'טופלה' : 'פתוחה';
     document.getElementById('faultDetailStatus').className = 'fault-status-badge ' + (fault.resolved ? 'resolved' : 'open');
 
+    const criticalRow = document.getElementById('faultDetailCriticalRow');
+    if (fault.critical) {
+        criticalRow.classList.remove('hidden');
+    } else {
+        criticalRow.classList.add('hidden');
+    }
+
     const closedRow = document.getElementById('faultDetailClosedRow');
     if (fault.closedDate) {
         closedRow.classList.remove('hidden');
@@ -231,6 +283,7 @@ function exportFaultsXLSX() {
             rows.push({
                 'כלי': vehicle.name,
                 'תקלה': fault.title,
+                'קריטי': fault.critical ? 'כן' : '',
                 'פירוט': fault.description || '',
                 'תאריך דיווח': formatDateHe(fault.reportDate),
                 'ימים פתוחים': getDaysOpen(fault.reportDate, fault.closedDate),
@@ -259,6 +312,7 @@ function exportFaultsPDF() {
         vehicle.faults.forEach(fault => {
             rows.push([
                 fault.resolved ? 'טופלה' : 'פתוחה',
+                fault.critical ? 'Yes' : '',
                 getDaysOpen(fault.reportDate, fault.closedDate).toString(),
                 formatDateHe(fault.reportDate),
                 fault.title,
@@ -281,7 +335,7 @@ function exportFaultsPDF() {
     doc.text('Fault Tracking Report', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
 
     doc.autoTable({
-        head: [['Status', 'Days Open', 'Report Date', 'Fault', 'Vehicle']],
+        head: [['Status', 'Critical', 'Days Open', 'Report Date', 'Fault', 'Vehicle']],
         body: rows,
         startY: 25,
         styles: { halign: 'center', fontSize: 10 },

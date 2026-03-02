@@ -1826,6 +1826,99 @@ h4 {
     white-space: pre-wrap;
 }
 
+/* Fault Stats Bar */
+.fault-stats-bar {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.fault-stat {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    min-width: 130px;
+}
+
+.fault-stat-value {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.fault-stat-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.fault-stat-open {
+    color: var(--warning);
+}
+
+.fault-stat-critical {
+    color: var(--danger);
+}
+
+.fault-stat-resolved {
+    color: var(--success);
+}
+
+/* Critical styles */
+.critical-badge {
+    background: var(--danger-bg) !important;
+    color: var(--danger) !important;
+}
+
+.fault-critical-row td {
+    border-right: 3px solid var(--danger);
+}
+
+.fault-critical-row td:first-child {
+    border-right: 3px solid var(--danger);
+}
+
+.critical-icon {
+    color: var(--danger);
+    font-size: 14px;
+}
+
+.fault-status-badge.critical {
+    background: var(--danger-bg);
+    color: var(--danger);
+}
+
+.fault-actions button.critical-active {
+    color: var(--danger);
+}
+
+.form-group-inline {
+    margin-bottom: 14px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--danger);
+    cursor: pointer;
+}
+
+.critical-checkbox-text {
+    color: var(--danger);
+    font-weight: 600;
+}
+
 /* ==================== Responsive ==================== */
 @media (max-width: 768px) {
     .hamburger-btn {

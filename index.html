@@ -524,6 +524,12 @@
                     <label>תאריך דיווח</label>
                     <input type="date" id="faultDateInput">
                 </div>
+                <div class="form-group form-group-inline">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="faultCriticalInput">
+                        <span class="critical-checkbox-text">תקלה קריטית</span>
+                    </label>
+                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-ghost" onclick="closeModal('faultModal')">ביטול</button>
@@ -556,6 +562,10 @@
                     <div class="fault-detail-row">
                         <span class="fault-detail-label">סטטוס:</span>
                         <span id="faultDetailStatus"></span>
+                    </div>
+                    <div class="fault-detail-row hidden" id="faultDetailCriticalRow">
+                        <span class="fault-detail-label">דחיפות:</span>
+                        <span class="fault-status-badge critical">קריטי</span>
                     </div>
                     <div class="fault-detail-row hidden" id="faultDetailClosedRow">
                         <span class="fault-detail-label">תאריך סגירה:</span>
