@@ -1,8 +1,4 @@
 // ==================== Configuration ====================
-const PASSWORDS = {
-    primary: '7368',   // Admin access
-    secondary: '6711'  // Viewer access
-};
 
 // ==================== Embedded Personnel Data ====================
 const INITIAL_PERSONNEL_DATA = [
@@ -362,24 +358,58 @@ let state = {
 // ==================== Initialize ====================
 document.addEventListener('DOMContentLoaded', async () => {
     initTheme();
-    await loadState();
     document.getElementById('passwordInput').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') handleLogin();
     });
+
+    // Check for existing session
+    try {
+        const res = await fetch('/api/session');
+        const { accessLevel } = await res.json();
+        if (accessLevel) {
+            state.accessLevel = accessLevel;
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+
+            const badge = document.getElementById('accessLevel');
+            if (accessLevel === 'admin') {
+                badge.textContent = 'מנהל';
+                badge.className = 'access-badge admin';
+            } else {
+                badge.textContent = 'צפייה';
+                badge.className = 'access-badge viewer';
+            }
+
+            await loadState();
+            initApp();
+        }
+    } catch (err) {
+        console.warn('Session check failed:', err);
+    }
 });
 
 // ==================== Auth ====================
-function handleLogin() {
+async function handleLogin() {
     const password = document.getElementById('passwordInput').value;
     const errorEl = document.getElementById('loginError');
 
-    if (password === PASSWORDS.primary) {
-        state.accessLevel = 'admin';
-    } else if (password === PASSWORDS.secondary) {
-        state.accessLevel = 'viewer';
-    } else {
-        errorEl.textContent = 'סיסמה שגויה';
-        document.getElementById('passwordInput').value = '';
+    try {
+        const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password })
+        });
+
+        if (!res.ok) {
+            errorEl.textContent = 'סיסמה שגויה';
+            document.getElementById('passwordInput').value = '';
+            return;
+        }
+
+        const { accessLevel } = await res.json();
+        state.accessLevel = accessLevel;
+    } catch (err) {
+        errorEl.textContent = 'שגיאת התחברות לשרת';
         return;
     }
 
@@ -395,10 +425,12 @@ function handleLogin() {
         badge.className = 'access-badge viewer';
     }
 
+    await loadState();
     initApp();
 }
 
-function handleLogout() {
+async function handleLogout() {
+    await fetch('/api/logout', { method: 'POST' });
     state.accessLevel = null;
     document.getElementById('mainApp').classList.add('hidden');
     document.getElementById('loginScreen').classList.remove('hidden');

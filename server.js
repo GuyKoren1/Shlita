@@ -1,14 +1,50 @@
 const express = require('express');
+const session = require('express-session');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 'data.json');
 const MONGODB_URI = process.env.MONGODB_URI;
 
+// --- Auth constants (server-side only) ---
+const PASSWORDS = {
+    '7368': 'admin',
+    '6711': 'viewer'
+};
+
 app.use(express.json({ limit: '10mb' }));
+
+// --- Session middleware ---
+app.use(session({
+    secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        httpOnly: true,
+        sameSite: 'lax',
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+}));
+
 app.use(express.static(__dirname));
+
+// --- Auth middleware ---
+function requireAuth(req, res, next) {
+    if (!req.session.accessLevel) {
+        return res.status(401).json({ error: 'Authentication required' });
+    }
+    next();
+}
+
+function requireAdmin(req, res, next) {
+    if (req.session.accessLevel !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required' });
+    }
+    next();
+}
 
 // --- MongoDB setup (only when MONGODB_URI is set) ---
 let db = null;
@@ -63,10 +99,35 @@ async function initDataMongo() {
     console.log('Initialized MongoDB with', data.personnel.length, 'personnel records');
 }
 
-// --- Routes ---
+// --- Auth Routes ---
+
+// POST /api/login
+app.post('/api/login', (req, res) => {
+    const { password } = req.body;
+    const accessLevel = PASSWORDS[password];
+    if (!accessLevel) {
+        return res.status(401).json({ error: 'סיסמה שגויה' });
+    }
+    req.session.accessLevel = accessLevel;
+    res.json({ accessLevel });
+});
+
+// POST /api/logout
+app.post('/api/logout', (req, res) => {
+    req.session.destroy(() => {
+        res.json({ ok: true });
+    });
+});
+
+// GET /api/session
+app.get('/api/session', (req, res) => {
+    res.json({ accessLevel: req.session.accessLevel || null });
+});
+
+// --- Data Routes ---
 
 // GET /api/data
-app.get('/api/data', async (req, res) => {
+app.get('/api/data', requireAuth, async (req, res) => {
     try {
         if (db) {
             const col = getCollection();
@@ -91,7 +152,7 @@ app.get('/api/data', async (req, res) => {
 });
 
 // POST /api/data
-app.post('/api/data', async (req, res) => {
+app.post('/api/data', requireAuth, requireAdmin, async (req, res) => {
     try {
         const { personnel, customColumns, activities, columnConfig, cameras, snapshots } = req.body;
         const data = {
@@ -117,7 +178,7 @@ app.post('/api/data', async (req, res) => {
 });
 
 // POST /api/reset
-app.post('/api/reset', async (req, res) => {
+app.post('/api/reset', requireAuth, requireAdmin, async (req, res) => {
     try {
         if (db) {
             const col = getCollection();
