@@ -1902,12 +1902,12 @@ h4 {
     color: var(--danger) !important;
 }
 
-.fault-critical-row td {
-    border-right: 3px solid var(--danger);
+.fault-critical-row {
+    background: rgba(239, 68, 68, 0.08);
 }
 
 .fault-critical-row td:first-child {
-    border-right: 3px solid var(--danger);
+    box-shadow: inset 3px 0 0 var(--danger);
 }
 
 .critical-icon {
