@@ -1,5 +1,7 @@
 // ==================== Activities ====================
 let _editingActivityId = null;
+let selectedParticipants = new Set();
+let selectedVehicles = new Set();
 
 function openNewActivityModal() {
     if (state.accessLevel !== 'admin') {
@@ -8,16 +10,15 @@ function openNewActivityModal() {
     }
     _editingActivityId = null;
     selectedParticipants = new Set();
+    selectedVehicles = new Set();
 
     document.getElementById('activityName').value = '';
     document.getElementById('activityDescription').value = '';
     document.getElementById('activityDeadline').value = '';
 
-    // Update modal title and button for create mode
     document.querySelector('#newActivityModal .modal-header h3').textContent = 'פעילות חדשה';
     document.getElementById('activitySaveBtn').textContent = 'צור פעילות';
 
-    // Reset dynamic filters
     const actSearch = document.getElementById('actSearchInput');
     if (actSearch) actSearch.value = '';
     getColumnConfig().filter(c => c.isFilter).forEach(col => {
@@ -26,6 +27,7 @@ function openNewActivityModal() {
     });
 
     renderActivityParticipants();
+    renderActivityVehicles();
     openModal('newActivityModal');
 }
 
@@ -39,19 +41,16 @@ function editActivity(activityId) {
 
     _editingActivityId = activityId;
 
-    // Pre-fill form
     document.getElementById('activityName').value = activity.name;
     document.getElementById('activityDescription').value = activity.description || '';
     document.getElementById('activityDeadline').value = activity.deadline || '';
 
-    // Update modal title and button for edit mode
     document.querySelector('#newActivityModal .modal-header h3').textContent = 'עריכת פעילות';
     document.getElementById('activitySaveBtn').textContent = 'שמור שינויים';
 
-    // Pre-select current participants
     selectedParticipants = new Set(activity.participants.map(p => p.personId));
+    selectedVehicles = new Set((activity.vehicleParticipants || []).map(v => v.vehicleId));
 
-    // Reset dynamic filters
     const actSearch = document.getElementById('actSearchInput');
     if (actSearch) actSearch.value = '';
     getColumnConfig().filter(c => c.isFilter).forEach(col => {
@@ -60,6 +59,7 @@ function editActivity(activityId) {
     });
 
     renderActivityParticipants();
+    renderActivityVehicles();
     closeModal('activityDetailModal');
     openModal('newActivityModal');
 }
@@ -88,9 +88,6 @@ function getActivityFilteredPersonnel() {
     });
 }
 
-// Track selected participants using a Set of person IDs
-let selectedParticipants = new Set();
-
 function renderActivityParticipants() {
     const filtered = getActivityFilteredPersonnel();
     const container = document.getElementById('participantsList');
@@ -117,12 +114,53 @@ function renderActivityParticipants() {
     updateSelectedCount();
 }
 
+function renderActivityVehicles() {
+    const container = document.getElementById('vehiclesList');
+    if (!container) return;
+
+    const vehicles = state.faultRecords || [];
+    if (vehicles.length === 0) {
+        container.innerHTML = '<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:13px">אין כלים במעקב תקלות</div>';
+        updateSelectedCount();
+        return;
+    }
+
+    let html = '';
+    vehicles.forEach(v => {
+        const checked = selectedVehicles.has(v.id) ? 'checked' : '';
+        const selectedClass = selectedVehicles.has(v.id) ? 'selected' : '';
+        const openFaults = v.faults.filter(f => !f.resolved).length;
+        const meta = openFaults > 0 ? `${openFaults} תקלות פתוחות` : 'תקין';
+        html += `<div class="participant-item ${selectedClass}" onclick="toggleVehicleParticipant('${v.id}')">
+            <input type="checkbox" ${checked} onclick="event.stopPropagation(); toggleVehicleParticipant('${v.id}')">
+            <div class="participant-info">
+                <span class="name">${escapeHtml(v.name)}</span>
+                <span class="meta">${escapeHtml(meta)}</span>
+            </div>
+        </div>`;
+    });
+
+    container.innerHTML = html;
+    updateSelectedCount();
+}
+
 function toggleParticipant(personId, element) {
     if (selectedParticipants.has(personId)) {
         selectedParticipants.delete(personId);
     } else {
         selectedParticipants.add(personId);
     }
+    renderActivityParticipants();
+    renderActivityVehicles();
+}
+
+function toggleVehicleParticipant(vehicleId) {
+    if (selectedVehicles.has(vehicleId)) {
+        selectedVehicles.delete(vehicleId);
+    } else {
+        selectedVehicles.add(vehicleId);
+    }
+    renderActivityVehicles();
     renderActivityParticipants();
 }
 
@@ -143,7 +181,19 @@ function filterActivityParticipants() {
 }
 
 function updateSelectedCount() {
-    document.getElementById('selectedCount').textContent = `${selectedParticipants.size} נבחרו`;
+    const total = selectedParticipants.size + selectedVehicles.size;
+    document.getElementById('selectedCount').textContent = `${total} נבחרו`;
+}
+
+function _getActivityTotals(activity) {
+    const pCount = activity.participants.length;
+    const vCount = (activity.vehicleParticipants || []).length;
+    const pDone = activity.participants.filter(p => p.completed).length;
+    const vDone = (activity.vehicleParticipants || []).filter(v => v.completed).length;
+    const total = pCount + vCount;
+    const completed = pDone + vDone;
+    const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+    return { total, completed, percent, pCount, vCount };
 }
 
 function saveActivity() {
@@ -152,13 +202,12 @@ function saveActivity() {
         showToast('יש להזין שם פעילות');
         return;
     }
-    if (selectedParticipants.size === 0) {
-        showToast('יש לבחור לפחות משתתף אחד');
+    if (selectedParticipants.size === 0 && selectedVehicles.size === 0) {
+        showToast('יש לבחור לפחות משתתף או כלי אחד');
         return;
     }
 
     if (_editingActivityId) {
-        // Edit existing activity
         const activity = state.activities.find(a => a.id === _editingActivityId);
         if (!activity) return;
 
@@ -166,23 +215,30 @@ function saveActivity() {
         activity.description = document.getElementById('activityDescription').value.trim();
         activity.deadline = document.getElementById('activityDeadline').value;
 
-        // Preserve completion status for existing participants, add new ones
+        // Personnel - preserve completion status
         const existingMap = {};
         activity.participants.forEach(p => { existingMap[p.personId] = p; });
-
         activity.participants = Array.from(selectedParticipants).map(id => {
             if (existingMap[id]) return existingMap[id];
             return { personId: id, completed: false, completedAt: null };
         });
 
+        // Vehicles - preserve completion status
+        const existingVMap = {};
+        (activity.vehicleParticipants || []).forEach(v => { existingVMap[v.vehicleId] = v; });
+        activity.vehicleParticipants = Array.from(selectedVehicles).map(id => {
+            if (existingVMap[id]) return existingVMap[id];
+            return { vehicleId: id, completed: false, completedAt: null };
+        });
+
         _editingActivityId = null;
         selectedParticipants = new Set();
+        selectedVehicles = new Set();
         saveState();
         renderActivities();
         closeModal('newActivityModal');
         showToast('פעילות עודכנה בהצלחה');
     } else {
-        // Create new activity
         const activity = {
             id: generateId(),
             name,
@@ -190,14 +246,16 @@ function saveActivity() {
             deadline: document.getElementById('activityDeadline').value,
             createdAt: new Date().toISOString(),
             participants: Array.from(selectedParticipants).map(id => ({
-                personId: id,
-                completed: false,
-                completedAt: null
+                personId: id, completed: false, completedAt: null
+            })),
+            vehicleParticipants: Array.from(selectedVehicles).map(id => ({
+                vehicleId: id, completed: false, completedAt: null
             }))
         };
 
         state.activities.push(activity);
         selectedParticipants = new Set();
+        selectedVehicles = new Set();
         saveState();
         renderActivities();
         closeModal('newActivityModal');
@@ -205,7 +263,6 @@ function saveActivity() {
     }
 }
 
-// Keep backward compat alias
 function createActivity() { saveActivity(); }
 
 function renderActivities() {
@@ -222,15 +279,17 @@ function renderActivities() {
     }
 
     let html = '';
-    // Show newest first
     [...state.activities].reverse().forEach(activity => {
-        const total = activity.participants.length;
-        const completed = activity.participants.filter(p => p.completed).length;
-        const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+        const { total, completed, percent, pCount, vCount } = _getActivityTotals(activity);
         const isOverdue = activity.deadline && percent < 100 && new Date(activity.deadline) < new Date();
         const statusClass = percent === 100 ? 'completed' : isOverdue ? 'overdue' : 'in-progress';
         const statusText = percent === 100 ? 'הושלמה' : isOverdue ? 'באיחור' : 'בתהליך';
         const cardClass = isOverdue ? 'activity-card activity-overdue' : 'activity-card';
+
+        const metaParts = [];
+        if (pCount > 0) metaParts.push(`👥 ${pCount} אנשים`);
+        if (vCount > 0) metaParts.push(`🚗 ${vCount} כלים`);
+        metaParts.push(`✅ ${completed} השלימו`);
 
         html += `<div class="${cardClass}" onclick="openActivityDetail('${activity.id}')">
             <div class="activity-card-header">
@@ -239,8 +298,7 @@ function renderActivities() {
             </div>
             ${activity.description ? `<p class="activity-card-desc">${escapeHtml(activity.description)}</p>` : ''}
             <div class="activity-card-meta">
-                <span>👥 ${total} משתתפים</span>
-                <span>✅ ${completed} השלימו</span>
+                ${metaParts.map(m => `<span>${m}</span>`).join('')}
                 ${activity.deadline ? `<span>${isOverdue ? '⚠️' : '📅'} ${formatDate(activity.deadline)}</span>` : ''}
                 <span>🕐 ${formatDate(activity.createdAt)}</span>
             </div>
@@ -268,7 +326,6 @@ function openActivityDetail(activityId) {
     document.getElementById('detailSearchInput').value = '';
     document.getElementById('detailFilterStatus').value = '';
 
-    // Show edit/delete buttons only for admin
     const isAdmin = state.accessLevel === 'admin';
     const editBtn = document.getElementById('editActivityBtn');
     if (editBtn) editBtn.style.display = isAdmin ? '' : 'none';
@@ -281,10 +338,7 @@ function openActivityDetail(activityId) {
 }
 
 function updateActivityProgress(activity) {
-    const total = activity.participants.length;
-    const completed = activity.participants.filter(p => p.completed).length;
-    const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
-
+    const { total, completed, percent } = _getActivityTotals(activity);
     document.getElementById('activityProgressText').textContent = `${percent}%`;
     document.getElementById('activityProgressBar').style.width = `${percent}%`;
     document.getElementById('activityCompletedCount').textContent = `${completed} השלימו`;
@@ -307,12 +361,12 @@ function renderDetailParticipants(activity) {
     const dPrimaryCol = dConfig.find(c => c.isPrimary) || dConfig[0];
     const dMetaCols = dConfig.filter(c => !c.isPrimary).slice(0, 3);
 
+    // Personnel participants
     activity.participants.forEach((participant, idx) => {
         const person = state.personnel.find(p => p.id === participant.personId);
         if (!person) return;
 
         const personName = person[dPrimaryCol.key] || '';
-        // Filter
         if (searchTerm && !personName.toLowerCase().includes(searchTerm)) return;
         if (statusFilter === 'completed' && !participant.completed) return;
         if (statusFilter === 'pending' && participant.completed) return;
@@ -332,6 +386,46 @@ function renderDetailParticipants(activity) {
         </div>`;
     });
 
+    // Vehicle participants
+    const vParticipants = activity.vehicleParticipants || [];
+    if (vParticipants.length > 0) {
+        // Check if we should show the vehicles section based on filter
+        const filteredVehicles = vParticipants.filter((vp, idx) => {
+            const vehicle = state.faultRecords.find(v => v.id === vp.vehicleId);
+            if (!vehicle) return false;
+            if (searchTerm && !vehicle.name.toLowerCase().includes(searchTerm)) return false;
+            if (statusFilter === 'completed' && !vp.completed) return false;
+            if (statusFilter === 'pending' && vp.completed) return false;
+            return true;
+        });
+
+        if (filteredVehicles.length > 0) {
+            html += `<div class="detail-section-divider">כלים</div>`;
+            vParticipants.forEach((vp, idx) => {
+                const vehicle = state.faultRecords.find(v => v.id === vp.vehicleId);
+                if (!vehicle) return;
+                if (searchTerm && !vehicle.name.toLowerCase().includes(searchTerm)) return;
+                if (statusFilter === 'completed' && !vp.completed) return;
+                if (statusFilter === 'pending' && vp.completed) return;
+
+                const checked = vp.completed ? 'checked' : '';
+                const completedClass = vp.completed ? 'completed-row' : '';
+                const isAdmin = state.accessLevel === 'admin';
+                const openFaults = vehicle.faults.filter(f => !f.resolved).length;
+                const meta = openFaults > 0 ? `${openFaults} תקלות פתוחות` : 'תקין';
+
+                html += `<div class="detail-participant ${completedClass} vehicle-participant">
+                    <div class="checkbox-wrap">
+                        <input type="checkbox" ${checked} ${isAdmin ? '' : 'disabled'}
+                            onchange="toggleVehicleCompletion('${activity.id}', ${idx}, this.checked)">
+                    </div>
+                    <span class="p-name">🚗 ${escapeHtml(vehicle.name)}</span>
+                    <span class="p-meta">${escapeHtml(meta)}</span>
+                </div>`;
+            });
+        }
+    }
+
     container.innerHTML = html || '<div style="padding:20px;text-align:center;color:var(--text-muted)">לא נמצאו משתתפים</div>';
 }
 
@@ -345,6 +439,19 @@ function toggleCompletion(activityId, participantIdx, completed) {
 
     activity.participants[participantIdx].completed = completed;
     activity.participants[participantIdx].completedAt = completed ? new Date().toISOString() : null;
+
+    saveState();
+    updateActivityProgress(activity);
+    renderDetailParticipants(activity);
+    renderActivities();
+}
+
+function toggleVehicleCompletion(activityId, vehicleIdx, completed) {
+    const activity = state.activities.find(a => a.id === activityId);
+    if (!activity || !activity.vehicleParticipants) return;
+
+    activity.vehicleParticipants[vehicleIdx].completed = completed;
+    activity.vehicleParticipants[vehicleIdx].completedAt = completed ? new Date().toISOString() : null;
 
     saveState();
     updateActivityProgress(activity);

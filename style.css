@@ -1014,6 +1014,21 @@ h4 {
     color: var(--success);
 }
 
+.detail-section-divider {
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border);
+    letter-spacing: 0.5px;
+}
+
+.vehicle-participant .p-name {
+    color: var(--orange);
+}
+
 /* ==================== Dashboard ==================== */
 .dashboard-grid {
     display: grid;

@@ -26,9 +26,7 @@ function exportActivitiesXLSX() {
 
     const rows = [];
     state.activities.forEach(act => {
-        const total = act.participants.length;
-        const completed = act.participants.filter(p => p.completed).length;
-        const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+        const { total, completed, percent } = _getActivityTotals(act);
 
         act.participants.forEach(p => {
             const person = state.personnel.find(per => per.id === p.personId);
@@ -37,9 +35,24 @@ function exportActivitiesXLSX() {
                 'תיאור': act.description || '',
                 'תאריך יעד': act.deadline ? formatDate(act.deadline) : '',
                 'התקדמות': percent + '%',
+                'סוג': 'כוח אדם',
                 'משתתף': person ? person[primaryCol.key] : 'לא נמצא',
                 'סטטוס': p.completed ? 'השלים' : 'טרם השלים',
                 'תאריך השלמה': p.completedAt ? formatDate(p.completedAt) : ''
+            });
+        });
+
+        (act.vehicleParticipants || []).forEach(vp => {
+            const vehicle = (state.faultRecords || []).find(v => v.id === vp.vehicleId);
+            rows.push({
+                'פעילות': act.name,
+                'תיאור': act.description || '',
+                'תאריך יעד': act.deadline ? formatDate(act.deadline) : '',
+                'התקדמות': percent + '%',
+                'סוג': 'כלי',
+                'משתתף': vehicle ? vehicle.name : 'לא נמצא',
+                'סטטוס': vp.completed ? 'השלים' : 'טרם השלים',
+                'תאריך השלמה': vp.completedAt ? formatDate(vp.completedAt) : ''
             });
         });
     });
