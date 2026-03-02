@@ -27,6 +27,14 @@ function getActiveCustomColumns() {
     return state.customColumns;
 }
 
+function getActiveFaultRecords() {
+    if (isViewingSnapshot()) {
+        const snap = state.snapshots.find(s => s.id === state.viewingSnapshotId);
+        return snap && snap.faultRecords ? snap.faultRecords : [];
+    }
+    return state.faultRecords;
+}
+
 function getActiveCameras() {
     if (isViewingSnapshot()) {
         const snap = state.snapshots.find(s => s.id === state.viewingSnapshotId);
@@ -51,7 +59,8 @@ function addNewDay() {
         personnel: JSON.parse(JSON.stringify(state.personnel)),
         customColumns: JSON.parse(JSON.stringify(state.customColumns)),
         columnConfig: state.columnConfig ? JSON.parse(JSON.stringify(state.columnConfig)) : null,
-        cameras: JSON.parse(JSON.stringify(state.cameras))
+        cameras: JSON.parse(JSON.stringify(state.cameras)),
+        faultRecords: JSON.parse(JSON.stringify(state.faultRecords))
     };
 
     state.snapshots.push(snapshot);

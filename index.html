@@ -57,6 +57,10 @@
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
                     <span>צלמים</span>
                 </li>
+                <li class="nav-item" data-view="faultTracking" onclick="switchView('faultTracking')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <span>תקלות כלים</span>
+                </li>
                 <li class="nav-item" data-view="dashboard" onclick="switchView('dashboard')">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                     <span>לוח בקרה</span>
@@ -175,6 +179,28 @@
                         <tbody id="camerasBody"></tbody>
                     </table>
                 </div>
+            </div>
+
+            <!-- Fault Tracking View -->
+            <div id="faultTrackingView" class="view">
+                <div class="view-header">
+                    <h2>מעקב תקלות כלים</h2>
+                    <div class="view-actions">
+                        <button class="btn btn-secondary" onclick="exportFaultsXLSX()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            ייצוא XLSX
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportFaultsPDF()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            ייצוא PDF
+                        </button>
+                        <button class="btn btn-primary" onclick="openAddVehicleModal()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            הוסף כלי
+                        </button>
+                    </div>
+                </div>
+                <div id="faultTrackingList"></div>
             </div>
 
             <!-- Dashboard View -->
@@ -458,11 +484,103 @@
         </div>
     </div>
 
+    <!-- Modal: Add Vehicle -->
+    <div id="addVehicleModal" class="modal-overlay hidden">
+        <div class="modal modal-sm">
+            <div class="modal-header">
+                <h3>הוסף כלי חדש</h3>
+                <button class="modal-close" onclick="closeModal('addVehicleModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>שם הכלי</label>
+                    <input type="text" id="vehicleNameInput" placeholder="לדוגמה: כלי 320">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('addVehicleModal')">ביטול</button>
+                <button class="btn btn-primary" onclick="saveVehicle()">הוסף</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Add/Edit Fault -->
+    <div id="faultModal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="faultModalTitle">תקלה חדשה</h3>
+                <button class="modal-close" onclick="closeModal('faultModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>כותרת תקלה</label>
+                    <input type="text" id="faultTitleInput" placeholder="תיאור קצר של התקלה">
+                </div>
+                <div class="form-group">
+                    <label>פירוט</label>
+                    <textarea id="faultDescInput" placeholder="פירוט מלא של התקלה..." rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>תאריך דיווח</label>
+                    <input type="date" id="faultDateInput">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('faultModal')">ביטול</button>
+                <button class="btn btn-primary" onclick="saveFault()">שמור</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Fault Detail -->
+    <div id="faultDetailModal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="faultDetailTitle"></h3>
+                <button class="modal-close" onclick="closeModal('faultDetailModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="fault-detail-grid">
+                    <div class="fault-detail-row">
+                        <span class="fault-detail-label">כלי:</span>
+                        <span id="faultDetailVehicle"></span>
+                    </div>
+                    <div class="fault-detail-row">
+                        <span class="fault-detail-label">תאריך דיווח:</span>
+                        <span id="faultDetailDate"></span>
+                    </div>
+                    <div class="fault-detail-row">
+                        <span class="fault-detail-label">ימים פתוחים:</span>
+                        <span id="faultDetailDays"></span>
+                    </div>
+                    <div class="fault-detail-row">
+                        <span class="fault-detail-label">סטטוס:</span>
+                        <span id="faultDetailStatus"></span>
+                    </div>
+                    <div class="fault-detail-row hidden" id="faultDetailClosedRow">
+                        <span class="fault-detail-label">תאריך סגירה:</span>
+                        <span id="faultDetailClosedDate"></span>
+                    </div>
+                </div>
+                <hr>
+                <div class="fault-detail-description">
+                    <h4>פירוט</h4>
+                    <p id="faultDetailDesc"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('faultDetailModal')">סגור</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast -->
     <div id="toast" class="toast hidden"></div>
 
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
     <!-- App modules (order matters - dependencies first) -->
     <script src="js/data.js"></script>
     <script src="js/state.js"></script>
@@ -477,6 +595,7 @@
     <script src="js/dashboard.js"></script>
     <script src="js/cameras.js"></script>
     <script src="js/export-import.js"></script>
+    <script src="js/fault-tracking.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

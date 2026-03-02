@@ -1646,6 +1646,186 @@ h4 {
     opacity: 1;
 }
 
+/* ==================== Fault Tracking ==================== */
+.vehicle-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    overflow: hidden;
+}
+
+.vehicle-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border);
+}
+
+.vehicle-card-header h3 {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.vehicle-card-badges {
+    display: flex;
+    gap: 8px;
+}
+
+.resolved-badge {
+    background: var(--success-bg) !important;
+    color: var(--success) !important;
+}
+
+.vehicle-card-actions {
+    margin-right: auto;
+    display: flex;
+    gap: 6px;
+}
+
+.fault-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.fault-table th {
+    background: var(--bg-card);
+    padding: 10px 14px;
+    text-align: right;
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 12px;
+    border-bottom: 1px solid var(--border);
+    cursor: default;
+}
+
+.fault-table th:hover {
+    color: var(--text-secondary);
+}
+
+.fault-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+}
+
+.fault-table tr:hover td {
+    background: var(--bg-hover);
+}
+
+.fault-table tr.fault-resolved td {
+    opacity: 0.55;
+}
+
+.fault-table tr.fault-resolved .fault-title-cell {
+    text-decoration: line-through;
+}
+
+.fault-empty {
+    padding: 24px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.days-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.days-green {
+    background: var(--success-bg);
+    color: var(--success);
+}
+
+.days-yellow {
+    background: var(--warning-bg);
+    color: var(--warning);
+}
+
+.days-red {
+    background: var(--danger-bg);
+    color: var(--danger);
+}
+
+.days-resolved {
+    background: var(--bg-tertiary);
+    color: var(--text-muted);
+}
+
+.fault-status-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.fault-status-badge.open {
+    background: var(--warning-bg);
+    color: var(--warning);
+}
+
+.fault-status-badge.resolved {
+    background: var(--success-bg);
+    color: var(--success);
+}
+
+.fault-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.fault-actions button {
+    padding: 4px 8px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all var(--transition);
+    font-size: 16px;
+}
+
+.fault-actions button:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.fault-detail-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.fault-detail-row {
+    display: flex;
+    gap: 12px;
+    font-size: 14px;
+}
+
+.fault-detail-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    min-width: 110px;
+}
+
+.fault-detail-description {
+    margin-top: 8px;
+}
+
+.fault-detail-description p {
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
 /* ==================== Responsive ==================== */
 @media (max-width: 768px) {
     .hamburger-btn {

@@ -11,6 +11,7 @@ let state = {
     editingPersonIndex: null, // for edit mode in modal
     currentActivityId: null,
     cameras: [],
+    faultRecords: [],
     snapshots: [],
     viewingSnapshotId: null // UI-only, not persisted
 };

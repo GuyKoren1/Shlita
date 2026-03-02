@@ -25,6 +25,7 @@ function switchView(viewName) {
     if (viewName === 'dashboard') updateDashboard();
     if (viewName === 'activities') renderActivities();
     if (viewName === 'cameras') renderCameras();
+    if (viewName === 'faultTracking') renderFaultTracking();
 
     // Close mobile sidebar after navigation
     document.querySelector('.sidebar').classList.remove('open');
