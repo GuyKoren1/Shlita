@@ -140,9 +140,13 @@
                             ייבוא פעילויות
                         </button>
                         <input type="file" id="importActivitiesInput" accept=".json" style="display:none" onchange="importActivitiesFile(event)">
+                        <button class="btn btn-secondary" onclick="exportActivitiesXLSX()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            ייצוא XLSX
+                        </button>
                         <button class="btn btn-secondary" onclick="exportActivities()">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                            ייצוא פעילויות
+                            ייצוא JSON
                         </button>
                         <button class="btn btn-primary" onclick="openNewActivityModal()">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -166,6 +170,14 @@
                         <button class="btn btn-secondary" onclick="exportCameras()">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                             ייצוא
+                        </button>
+                        <button class="btn btn-secondary" onclick="addCameraRow()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            שורת ציוד
+                        </button>
+                        <button class="btn btn-primary" onclick="openAddTankModal()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            הוסף טנק
                         </button>
                     </div>
                 </div>
@@ -199,6 +211,15 @@
                             הוסף כלי
                         </button>
                     </div>
+                </div>
+                <div class="fault-filters-bar">
+                    <input type="text" id="faultSearchInput" placeholder="חיפוש תקלה או כלי..." oninput="renderFaultTracking()">
+                    <select id="faultStatusFilter" onchange="renderFaultTracking()">
+                        <option value="">הכל</option>
+                        <option value="open">פתוחות</option>
+                        <option value="critical">קריטיות</option>
+                        <option value="resolved">טופלו</option>
+                    </select>
                 </div>
                 <div id="faultTrackingList"></div>
             </div>
@@ -243,6 +264,24 @@
                         <div class="stat-info">
                             <span class="stat-value" id="avgCompletion">0%</span>
                             <span class="stat-label">ממוצע השלמת פעילויות</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background:var(--warning-bg);color:var(--warning)">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="totalOpenFaults">0</span>
+                            <span class="stat-label">תקלות פתוחות</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background:var(--danger-bg);color:var(--danger)">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="totalCriticalFaults">0</span>
+                            <span class="stat-label">תקלות קריטיות</span>
                         </div>
                     </div>
                 </div>
@@ -480,6 +519,34 @@
             <div class="modal-footer">
                 <button class="btn btn-ghost" onclick="closeModal('importModal')">ביטול</button>
                 <button id="importConfirmBtn" class="btn btn-primary hidden" onclick="confirmImport()">ייבוא</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Add Tank -->
+    <div id="addTankModal" class="modal-overlay hidden">
+        <div class="modal modal-sm">
+            <div class="modal-header">
+                <h3>הוסף טנק חדש</h3>
+                <button class="modal-close" onclick="closeModal('addTankModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>שם/מספר טנק</label>
+                    <input type="text" id="newTankName" placeholder="לדוגמה: טנק 5">
+                </div>
+                <div class="form-group">
+                    <label>מפקד</label>
+                    <input type="text" id="newTankCommander" placeholder="שם מפקד">
+                </div>
+                <div class="form-group">
+                    <label>חטיבת מקור</label>
+                    <input type="text" id="newTankBrigade" placeholder="חטיבת מקור">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('addTankModal')">ביטול</button>
+                <button class="btn btn-primary" onclick="saveNewTank()">הוסף</button>
             </div>
         </div>
     </div>

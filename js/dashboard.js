@@ -6,6 +6,15 @@ function updateDashboard() {
     document.getElementById('totalPersonnel').textContent = state.personnel.length;
     document.getElementById('totalActivities').textContent = state.activities.length;
 
+    // Fault stats
+    const allFaults = state.faultRecords.flatMap(v => v.faults);
+    const openFaults = allFaults.filter(f => !f.resolved).length;
+    const criticalFaults = allFaults.filter(f => !f.resolved && f.critical).length;
+    document.getElementById('totalOpenFaults').textContent = openFaults;
+    document.getElementById('totalCriticalFaults').textContent = criticalFaults;
+    const faultCritEl = document.getElementById('totalCriticalFaults');
+    faultCritEl.style.color = criticalFaults > 0 ? 'var(--danger)' : '';
+
     const dashConfig = getColumnConfig();
     const filterCols = dashConfig.filter(c => c.isFilter);
 

@@ -25,6 +25,12 @@ function renderFaultTracking() {
     const totalCritical = allFaults.filter(f => !f.resolved && f.critical).length;
     const totalResolved = allFaults.filter(f => f.resolved).length;
 
+    // Filters
+    const searchEl = document.getElementById('faultSearchInput');
+    const statusEl = document.getElementById('faultStatusFilter');
+    const searchTerm = searchEl ? searchEl.value.toLowerCase() : '';
+    const statusFilter = statusEl ? statusEl.value : '';
+
     let html = `<div class="fault-stats-bar">
         <div class="fault-stat">
             <span class="fault-stat-value">${records.length}</span>
@@ -44,9 +50,26 @@ function renderFaultTracking() {
         </div>
     </div>`;
     records.forEach(vehicle => {
-        const openFaults = vehicle.faults.filter(f => !f.resolved);
+        // Apply filters
+        let filteredFaults = vehicle.faults;
+        if (statusFilter === 'open') filteredFaults = filteredFaults.filter(f => !f.resolved);
+        else if (statusFilter === 'critical') filteredFaults = filteredFaults.filter(f => !f.resolved && f.critical);
+        else if (statusFilter === 'resolved') filteredFaults = filteredFaults.filter(f => f.resolved);
+
+        if (searchTerm) {
+            const vehicleMatch = vehicle.name.toLowerCase().includes(searchTerm);
+            filteredFaults = filteredFaults.filter(f =>
+                vehicleMatch || f.title.toLowerCase().includes(searchTerm) || (f.description || '').toLowerCase().includes(searchTerm)
+            );
+        }
+
+        // Skip vehicles with no matching faults (unless no filters active or vehicle name matches)
+        const vehicleNameMatch = searchTerm && vehicle.name.toLowerCase().includes(searchTerm);
+        if (filteredFaults.length === 0 && !vehicleNameMatch && (searchTerm || statusFilter)) return;
+
+        const openFaults = filteredFaults.filter(f => !f.resolved);
         const criticalOpen = openFaults.filter(f => f.critical).length;
-        const closedFaults = vehicle.faults.filter(f => f.resolved);
+        const closedFaults = filteredFaults.filter(f => f.resolved);
         const sortedFaults = [...openFaults, ...closedFaults];
 
         html += `<div class="vehicle-card">

@@ -15,6 +15,43 @@ function exportData() {
 }
 
 // ==================== Activities Export/Import ====================
+function exportActivitiesXLSX() {
+    if (state.activities.length === 0) {
+        showToast('אין פעילויות לייצוא');
+        return;
+    }
+
+    const config = getColumnConfig();
+    const primaryCol = config.find(c => c.isPrimary) || config[0];
+
+    const rows = [];
+    state.activities.forEach(act => {
+        const total = act.participants.length;
+        const completed = act.participants.filter(p => p.completed).length;
+        const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+        act.participants.forEach(p => {
+            const person = state.personnel.find(per => per.id === p.personId);
+            rows.push({
+                'פעילות': act.name,
+                'תיאור': act.description || '',
+                'תאריך יעד': act.deadline ? formatDate(act.deadline) : '',
+                'התקדמות': percent + '%',
+                'משתתף': person ? person[primaryCol.key] : 'לא נמצא',
+                'סטטוס': p.completed ? 'השלים' : 'טרם השלים',
+                'תאריך השלמה': p.completedAt ? formatDate(p.completedAt) : ''
+            });
+        });
+    });
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws['!cols'] = Object.keys(rows[0] || {}).map(() => ({ wch: 18 }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'פעילויות');
+    XLSX.writeFile(wb, `פעילויות_${new Date().toLocaleDateString('he-IL')}.xlsx`);
+    showToast('קובץ פעילויות XLSX יוצא בהצלחה');
+}
+
 function exportActivities() {
     if (state.activities.length === 0) {
         showToast('אין פעילויות לייצוא');

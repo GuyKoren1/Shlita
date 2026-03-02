@@ -10,8 +10,12 @@ function renderCameras() {
 
     // Header: # | ציוד | tank1 | tank2 | ... | (actions if admin)
     let headHtml = '<tr class="camera-header-row"><th>#</th><th>ציוד</th>';
-    cameras.forEach(c => {
-        headHtml += `<th>${escapeHtml(c.tank)}</th>`;
+    cameras.forEach((c, idx) => {
+        if (canEdit) {
+            headHtml += `<th>${escapeHtml(c.tank)} <span class="col-delete-btn" onclick="deleteTank(${idx})" title="מחק טנק">&times;</span></th>`;
+        } else {
+            headHtml += `<th>${escapeHtml(c.tank)}</th>`;
+        }
     });
     if (canEdit) headHtml += '<th></th>';
     headHtml += '</tr>';
@@ -178,6 +182,63 @@ function deleteCameraRow(itemIdx) {
     saveState();
     renderCameras();
     showToast(`${name} נמחק`);
+}
+
+function openAddTankModal() {
+    if (state.accessLevel !== 'admin') { showToast('אין הרשאה'); return; }
+    document.getElementById('newTankName').value = '';
+    document.getElementById('newTankCommander').value = '';
+    document.getElementById('newTankBrigade').value = '';
+    openModal('addTankModal');
+}
+
+function saveNewTank() {
+    const tank = document.getElementById('newTankName').value.trim();
+    if (!tank) { showToast('יש להזין שם טנק'); return; }
+
+    // Copy items structure from first existing tank
+    const template = state.cameras[0];
+    const items = template.items.map(item => ({
+        name: item.name,
+        serial: '',
+        status: 'תקין'
+    }));
+
+    state.cameras.push({
+        id: generateId(),
+        tank,
+        commander: document.getElementById('newTankCommander').value.trim(),
+        sourceBrigade: document.getElementById('newTankBrigade').value.trim(),
+        items
+    });
+
+    saveState();
+    closeModal('addTankModal');
+    renderCameras();
+    showToast(`טנק "${tank}" נוסף`);
+}
+
+function addCameraRow() {
+    if (state.accessLevel !== 'admin') { showToast('אין הרשאה'); return; }
+    const name = prompt('שם ציוד חדש:');
+    if (!name || !name.trim()) return;
+
+    state.cameras.forEach(cam => {
+        cam.items.push({ name: name.trim(), serial: '', status: 'תקין' });
+    });
+    saveState();
+    renderCameras();
+    showToast(`"${name.trim()}" נוסף`);
+}
+
+function deleteTank(tankIdx) {
+    if (state.accessLevel !== 'admin') return;
+    const tank = state.cameras[tankIdx];
+    if (!confirm(`למחוק את טנק "${tank.tank}"?`)) return;
+    state.cameras.splice(tankIdx, 1);
+    saveState();
+    renderCameras();
+    showToast(`טנק "${tank.tank}" נמחק`);
 }
 
 function exportCameras() {

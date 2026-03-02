@@ -860,6 +860,20 @@ h4 {
     color: var(--success);
 }
 
+.activity-status.overdue {
+    background: var(--danger-bg);
+    color: var(--danger);
+}
+
+.activity-card.activity-overdue {
+    border-color: rgba(248, 113, 113, 0.4);
+}
+
+.activity-card.activity-overdue:hover {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 1px var(--danger);
+}
+
 .activity-card-desc {
     color: var(--text-secondary);
     font-size: 13px;
@@ -1917,6 +1931,39 @@ h4 {
 .critical-checkbox-text {
     color: var(--danger);
     font-weight: 600;
+}
+
+.fault-filters-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.fault-filters-bar input,
+.fault-filters-bar select {
+    padding: 8px 14px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 13px;
+    outline: none;
+    transition: border-color var(--transition);
+}
+
+.fault-filters-bar input {
+    flex: 1;
+    max-width: 300px;
+}
+
+.fault-filters-bar input:focus,
+.fault-filters-bar select:focus {
+    border-color: var(--accent);
+}
+
+.fault-filters-bar select {
+    cursor: pointer;
+    min-width: 120px;
 }
 
 /* ==================== Responsive ==================== */

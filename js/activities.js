@@ -227,10 +227,12 @@ function renderActivities() {
         const total = activity.participants.length;
         const completed = activity.participants.filter(p => p.completed).length;
         const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
-        const statusClass = percent === 100 ? 'completed' : 'in-progress';
-        const statusText = percent === 100 ? 'הושלמה' : 'בתהליך';
+        const isOverdue = activity.deadline && percent < 100 && new Date(activity.deadline) < new Date();
+        const statusClass = percent === 100 ? 'completed' : isOverdue ? 'overdue' : 'in-progress';
+        const statusText = percent === 100 ? 'הושלמה' : isOverdue ? 'באיחור' : 'בתהליך';
+        const cardClass = isOverdue ? 'activity-card activity-overdue' : 'activity-card';
 
-        html += `<div class="activity-card" onclick="openActivityDetail('${activity.id}')">
+        html += `<div class="${cardClass}" onclick="openActivityDetail('${activity.id}')">
             <div class="activity-card-header">
                 <h3>${escapeHtml(activity.name)}</h3>
                 <span class="activity-status ${statusClass}">${statusText}</span>
@@ -239,7 +241,7 @@ function renderActivities() {
             <div class="activity-card-meta">
                 <span>👥 ${total} משתתפים</span>
                 <span>✅ ${completed} השלימו</span>
-                ${activity.deadline ? `<span>📅 ${formatDate(activity.deadline)}</span>` : ''}
+                ${activity.deadline ? `<span>${isOverdue ? '⚠️' : '📅'} ${formatDate(activity.deadline)}</span>` : ''}
                 <span>🕐 ${formatDate(activity.createdAt)}</span>
             </div>
             <div class="progress-bar">
