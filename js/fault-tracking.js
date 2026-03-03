@@ -412,9 +412,13 @@ async function exportFaultsPDF() {
         doc.addFileToVFS('Rubik-Regular.ttf', fontBase64);
         doc.addFont('Rubik-Regular.ttf', 'Rubik', 'normal');
         doc.setFont('Rubik');
+        const pageW = doc.internal.pageSize.getWidth();
         doc.setFontSize(18);
-        const todayStr = new Date().toLocaleDateString('he-IL');
-        doc.text(_reverseHebrew(`דוח מעקב תקלות כלים - ${todayStr}`), doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+        doc.text(_reverseHebrew('דוח מעקב תקלות כלים'), pageW / 2, 15, { align: 'center' });
+        const d = new Date();
+        const dateStr = d.getDate() + '.' + (d.getMonth() + 1) + '.' + d.getFullYear();
+        doc.setFontSize(12);
+        doc.text(dateStr, pageW / 2, 22, { align: 'center' });
 
         const tableHead = [[
             _reverseHebrew('סטטוס'),
@@ -425,13 +429,13 @@ async function exportFaultsPDF() {
             _reverseHebrew('כלי')
         ]];
 
-        let currentY = 25;
+        let currentY = 30;
 
         // Critical faults table
         if (criticalRows.length > 0) {
             doc.setFontSize(14);
             doc.setTextColor(239, 68, 68);
-            doc.text(_reverseHebrew(`תקלות קריטיות (${criticalRows.length})`), doc.internal.pageSize.getWidth() / 2, currentY, { align: 'center' });
+            doc.text(_reverseHebrew(`תקלות קריטיות (${criticalRows.length})`), pageW / 2, currentY, { align: 'center' });
             doc.setTextColor(0, 0, 0);
             currentY += 5;
 
@@ -450,7 +454,7 @@ async function exportFaultsPDF() {
         if (normalRows.length > 0) {
             doc.setFontSize(14);
             doc.setTextColor(0, 0, 0);
-            doc.text(_reverseHebrew(`תקלות רגילות (${normalRows.length})`), doc.internal.pageSize.getWidth() / 2, currentY, { align: 'center' });
+            doc.text(_reverseHebrew(`תקלות רגילות (${normalRows.length})`), pageW / 2, currentY, { align: 'center' });
             currentY += 5;
 
             doc.autoTable({
