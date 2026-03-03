@@ -287,6 +287,65 @@ body {
     gap: 6px;
 }
 
+/* Save Status Indicator */
+.save-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    min-height: 24px;
+}
+
+.save-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.save-status.ok .save-dot {
+    background: var(--success);
+}
+
+.save-status.saving .save-dot {
+    background: var(--warning);
+    animation: pulse 1s infinite;
+}
+
+.save-status.error {
+    color: var(--danger);
+    background: var(--danger-bg);
+}
+
+.save-status.error .save-dot {
+    background: var(--danger);
+}
+
+.save-retry-btn {
+    background: none;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    font-size: 10px;
+    padding: 1px 8px;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-right: auto;
+    transition: all var(--transition);
+}
+
+.save-retry-btn:hover {
+    background: var(--danger);
+    color: white;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
 .theme-toggle {
     display: flex;
     align-items: center;

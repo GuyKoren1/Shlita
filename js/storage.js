@@ -33,14 +33,19 @@ async function loadState() {
 }
 
 let _saveTimeout = null;
+let _lastSaveOk = true;
+let _lastSaveTime = null;
+let _hasPendingChanges = false;
+
 function saveState() {
-    // Debounce: wait 300ms before saving to avoid excessive writes
+    _hasPendingChanges = true;
+    _updateSaveStatus();
     clearTimeout(_saveTimeout);
     _saveTimeout = setTimeout(() => _saveStateNow(), 300);
 }
 
-async function _saveStateNow() {
-    const payload = {
+function _buildPayload() {
+    return {
         personnel: state.personnel,
         customColumns: state.customColumns,
         activities: state.activities,
@@ -50,6 +55,10 @@ async function _saveStateNow() {
         report1: state.report1,
         snapshots: state.snapshots
     };
+}
+
+async function _saveStateNow() {
+    const payload = _buildPayload();
     try {
         const res = await fetch('/api/data', {
             method: 'POST',
@@ -57,9 +66,41 @@ async function _saveStateNow() {
             body: JSON.stringify(payload)
         });
         if (!res.ok) throw new Error('Save failed');
+        _lastSaveOk = true;
+        _lastSaveTime = new Date();
+        _hasPendingChanges = false;
     } catch (err) {
         console.warn('Server save failed, falling back to localStorage:', err);
         localStorage.setItem('shlita_data', JSON.stringify(payload));
+        _lastSaveOk = false;
+        _hasPendingChanges = false;
+    }
+    _updateSaveStatus();
+}
+
+function retrySave() {
+    _hasPendingChanges = true;
+    _updateSaveStatus();
+    _saveStateNow();
+}
+
+function _formatSaveTime(date) {
+    if (!date) return '';
+    return date.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+}
+
+function _updateSaveStatus() {
+    const el = document.getElementById('saveStatus');
+    if (!el) return;
+    if (_hasPendingChanges) {
+        el.className = 'save-status saving';
+        el.innerHTML = '<span class="save-dot"></span> שומר...';
+    } else if (!_lastSaveOk) {
+        el.className = 'save-status error';
+        el.innerHTML = '<span class="save-dot"></span> שמירה נכשלה <button class="save-retry-btn" onclick="retrySave()">נסה שוב</button>';
+    } else if (_lastSaveTime) {
+        el.className = 'save-status ok';
+        el.innerHTML = '<span class="save-dot"></span> נשמר ' + _formatSaveTime(_lastSaveTime);
     }
 }
 
