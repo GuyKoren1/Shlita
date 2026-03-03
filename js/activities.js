@@ -517,8 +517,10 @@ async function exportActivitiesPDF() {
                 currentY += 6;
             }
             if (act.deadline) {
+                const dl = new Date(act.deadline);
+                const dlStr = dl.getDate() + '.' + (dl.getMonth() + 1) + '.' + dl.getFullYear();
                 doc.setFontSize(10);
-                doc.text(_reverseHebrew('תאריך יעד: ' + formatDate(act.deadline)), pageW / 2, currentY + 6, { align: 'center' });
+                doc.text(dlStr + ' :' + _reverseHebrew('תאריך יעד'), pageW / 2, currentY + 6, { align: 'center' });
                 currentY += 6;
             }
 
@@ -528,8 +530,13 @@ async function exportActivitiesPDF() {
             const rows = [];
             act.participants.forEach(p => {
                 const person = state.personnel.find(per => per.id === p.personId);
+                let cDate = '';
+                if (p.completedAt) {
+                    const cd = new Date(p.completedAt);
+                    cDate = cd.getDate() + '.' + (cd.getMonth() + 1) + '.' + cd.getFullYear();
+                }
                 rows.push([
-                    p.completedAt ? _reverseHebrew(formatDate(p.completedAt)) : '',
+                    cDate,
                     p.completed ? _reverseHebrew('השלים') : _reverseHebrew('טרם השלים'),
                     _reverseHebrew(person ? person[primaryCol.key] : 'לא נמצא'),
                     _reverseHebrew('כוח אדם')
@@ -537,8 +544,13 @@ async function exportActivitiesPDF() {
             });
             (act.vehicleParticipants || []).forEach(vp => {
                 const vehicle = (state.faultRecords || []).find(v => v.id === vp.vehicleId);
+                let cDate = '';
+                if (vp.completedAt) {
+                    const cd = new Date(vp.completedAt);
+                    cDate = cd.getDate() + '.' + (cd.getMonth() + 1) + '.' + cd.getFullYear();
+                }
                 rows.push([
-                    vp.completedAt ? _reverseHebrew(formatDate(vp.completedAt)) : '',
+                    cDate,
                     vp.completed ? _reverseHebrew('השלים') : _reverseHebrew('טרם השלים'),
                     _reverseHebrew(vehicle ? vehicle.name : 'לא נמצא'),
                     _reverseHebrew('כלי')
