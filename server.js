@@ -203,6 +203,11 @@ app.post('/api/reset', requireAuth, requireAdmin, async (req, res) => {
     }
 });
 
+// Health check endpoint for keep-alive
+app.get('/api/health', (req, res) => {
+    res.json({ ok: true });
+});
+
 // Serve index.html for all other routes
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
@@ -225,6 +230,15 @@ async function start() {
 
     app.listen(PORT, () => {
         console.log(`Shlita server running on http://localhost:${PORT}`);
+
+        // Keep-alive: ping self every 14 minutes to prevent Render free tier spin-down
+        const RENDER_URL = process.env.RENDER_EXTERNAL_URL;
+        if (RENDER_URL) {
+            setInterval(() => {
+                fetch(`${RENDER_URL}/api/health`).catch(() => {});
+            }, 14 * 60 * 1000);
+            console.log('Keep-alive enabled: pinging', RENDER_URL, 'every 14 minutes');
+        }
     });
 }
 

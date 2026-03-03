@@ -34,11 +34,15 @@ function updateDashboard() {
     document.getElementById('totalTeams').textContent = groups.length;
     document.getElementById('teamsLabel').textContent = groupCol.label;
 
-    // Avg completion
+    // Avg completion (personnel + vehicles)
     if (state.activities.length > 0) {
         const totalPercent = state.activities.reduce((sum, act) => {
-            const total = act.participants.length;
-            const completed = act.participants.filter(p => p.completed).length;
+            const pTotal = act.participants.length;
+            const pDone = act.participants.filter(p => p.completed).length;
+            const vTotal = (act.vehicleParticipants || []).length;
+            const vDone = (act.vehicleParticipants || []).filter(p => p.completed).length;
+            const total = pTotal + vTotal;
+            const completed = pDone + vDone;
             return sum + (total > 0 ? (completed / total) * 100 : 0);
         }, 0);
         document.getElementById('avgCompletion').textContent = Math.round(totalPercent / state.activities.length) + '%';
@@ -53,8 +57,12 @@ function updateDashboard() {
     } else {
         let html = '';
         [...state.activities].reverse().slice(0, 5).forEach(act => {
-            const total = act.participants.length;
-            const completed = act.participants.filter(p => p.completed).length;
+            const pTotal = act.participants.length;
+            const pDone = act.participants.filter(p => p.completed).length;
+            const vTotal = (act.vehicleParticipants || []).length;
+            const vDone = (act.vehicleParticipants || []).filter(p => p.completed).length;
+            const total = pTotal + vTotal;
+            const completed = pDone + vDone;
             const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
             html += `<div class="activity-mini">
                 <span class="activity-mini-name">${escapeHtml(act.name)}</span>
