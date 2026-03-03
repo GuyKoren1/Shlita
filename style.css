@@ -2372,6 +2372,107 @@ tr.r1-excluded .r1-cell {
     color: #fff;
 }
 
+.feedback-fab-option.view-reports {
+    background: var(--accent);
+    color: #fff;
+}
+
+/* --- Feedback List (admin modal) --- */
+.feedback-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.feedback-empty {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 32px 0;
+}
+
+.feedback-item {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.feedback-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.feedback-item-tags {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.feedback-type-badge {
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.feedback-type-badge.bug {
+    background: var(--danger-bg);
+    color: var(--danger);
+}
+
+.feedback-type-badge.suggestion {
+    background: var(--success-bg);
+    color: var(--success);
+}
+
+.feedback-page-tag {
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--accent-bg);
+    color: var(--accent);
+}
+
+.feedback-delete-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all var(--transition);
+}
+
+.feedback-delete-btn:hover {
+    background: var(--danger-bg);
+    color: var(--danger);
+}
+
+.feedback-item-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.feedback-item-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    white-space: pre-wrap;
+    margin-bottom: 8px;
+}
+
+.feedback-item-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
 /* ==================== Responsive ==================== */
 @media (max-width: 768px) {
     /* --- Sidebar & Nav --- */
