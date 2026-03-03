@@ -18,16 +18,23 @@ function switchReport1Tab(tab) {
     renderReport1();
 }
 
+function _toLocalDateStr(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+}
+
 function _getReport1DateRange() {
     const start = state.report1.startDate;
     if (!start) return [];
-    const startDate = new Date(start + 'T00:00:00');
+    const startDate = new Date(start + 'T12:00:00');
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    today.setHours(12, 0, 0, 0);
     const dates = [];
     const d = new Date(startDate);
     while (d <= today) {
-        dates.push(d.toISOString().split('T')[0]);
+        dates.push(_toLocalDateStr(d));
         d.setDate(d.getDate() + 1);
     }
     return dates;
