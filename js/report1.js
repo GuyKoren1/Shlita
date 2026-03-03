@@ -157,6 +157,31 @@ function _calcReport1Stats(personId) {
     return { home, base, none, total: dates.length };
 }
 
+function _calcReport1Streak(personId) {
+    const dates = _getReport1DateRange();
+    if (dates.length === 0) return { type: null, days: 0 };
+    const entries = state.report1.entries[personId] || {};
+    // Walk backwards from today to find current streak
+    let streakType = null;
+    let streakDays = 0;
+    for (let i = dates.length - 1; i >= 0; i--) {
+        const val = entries[dates[i]] || '';
+        if (streakType === null) {
+            if (val === 'home' || val === 'base') {
+                streakType = val;
+                streakDays = 1;
+            } else {
+                break; // last day has no report - no streak
+            }
+        } else if (val === streakType) {
+            streakDays++;
+        } else {
+            break;
+        }
+    }
+    return { type: streakType, days: streakDays };
+}
+
 function renderReport1View() {
     _renderReport1CategoryFilters();
     _renderReport1Summary();
@@ -202,11 +227,15 @@ function _getReport1FilteredPersonnel() {
         for (const f of activeFilters) {
             if (p[f.key] !== f.value) return false;
         }
-        // Days filters
+        // Streak filters (based on last consecutive days, not total)
         if (minHome !== null || minBase !== null) {
-            const stats = _calcReport1Stats(p.id);
-            if (minHome !== null && stats.home < minHome) return false;
-            if (minBase !== null && stats.base < minBase) return false;
+            const streak = _calcReport1Streak(p.id);
+            if (minHome !== null) {
+                if (streak.type !== 'home' || streak.days < minHome) return false;
+            }
+            if (minBase !== null) {
+                if (streak.type !== 'base' || streak.days < minBase) return false;
+            }
         }
         return true;
     });
@@ -223,10 +252,10 @@ function _renderReport1Summary() {
 
     head.innerHTML = `<tr>
         <th>שם</th>
-        <th>ימים בבית \u{1F3E0}</th>
-        <th>ימים בבסיס \u{1F3DB}\uFE0F</th>
+        <th>רצף אחרון</th>
+        <th>סה"כ בבית \u{1F3E0}</th>
+        <th>סה"כ בבסיס \u{1F3DB}\uFE0F</th>
         <th>ללא דיווח</th>
-        <th>סה"כ ימים</th>
     </tr>`;
 
     if (dates.length === 0) {
@@ -237,13 +266,23 @@ function _renderReport1Summary() {
     let bodyHtml = '';
     filtered.forEach(person => {
         const stats = _calcReport1Stats(person.id);
+        const streak = _calcReport1Streak(person.id);
         const name = escapeHtml(person[primaryCol.key] || person.name || '');
+        let streakText = '-';
+        let streakClass = '';
+        if (streak.type === 'home') {
+            streakText = streak.days + ' ימים בבית';
+            streakClass = 'r1-home-cell';
+        } else if (streak.type === 'base') {
+            streakText = streak.days + ' ימים בבסיס';
+            streakClass = 'r1-base-cell';
+        }
         bodyHtml += `<tr>
             <td>${name}</td>
+            <td class="${streakClass}">${streakText}</td>
             <td class="r1-home-cell">${stats.home}</td>
             <td class="r1-base-cell">${stats.base}</td>
             <td>${stats.none}</td>
-            <td>${stats.total}</td>
         </tr>`;
     });
 
