@@ -2771,17 +2771,36 @@ tr.r1-excluded .r1-cell {
     }
 
     .report1-table {
-        min-width: 600px;
+        min-width: unset;
+        font-size: 11px;
+    }
+
+    .r1-name-col {
+        min-width: 70px;
+        max-width: 90px;
+        padding: 6px 6px !important;
+        font-size: 11px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .r1-cell {
-        min-width: 36px;
+        min-width: 32px;
         font-size: 14px;
+        padding: 4px 2px !important;
+        height: 34px;
     }
 
     .r1-date-col {
+        min-width: 32px;
+        font-size: 9px;
+        padding: 4px 2px;
+    }
+
+    .r1-excluded-col {
         min-width: 40px;
-        font-size: 10px;
+        font-size: 11px;
     }
 
     /* --- Snapshot bar --- */
