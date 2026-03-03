@@ -350,21 +350,27 @@ function _reverseHebrew(text) {
 
 async function exportFaultsPDF() {
     const records = getActiveFaultRecords();
-    const rows = [];
+    const criticalRows = [];
+    const normalRows = [];
+
     records.forEach(vehicle => {
         vehicle.faults.forEach(fault => {
-            rows.push([
+            const row = [
                 _reverseHebrew(fault.resolved ? 'טופלה' : 'פתוחה'),
-                fault.critical ? _reverseHebrew('כן') : '',
                 getDaysOpen(fault.reportDate, fault.closedDate).toString(),
                 formatDateHe(fault.reportDate),
                 _reverseHebrew(fault.title),
                 _reverseHebrew(vehicle.name)
-            ]);
+            ];
+            if (fault.critical) {
+                criticalRows.push(row);
+            } else {
+                normalRows.push(row);
+            }
         });
     });
 
-    if (rows.length === 0) {
+    if (criticalRows.length === 0 && normalRows.length === 0) {
         showToast('אין נתונים לייצוא');
         return;
     }
@@ -381,20 +387,50 @@ async function exportFaultsPDF() {
         doc.setFontSize(18);
         doc.text(_reverseHebrew('דוח מעקב תקלות כלים'), doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
 
-        doc.autoTable({
-            head: [[
-                _reverseHebrew('סטטוס'),
-                _reverseHebrew('קריטי'),
-                _reverseHebrew('ימים'),
-                _reverseHebrew('תאריך דיווח'),
-                _reverseHebrew('תקלה'),
-                _reverseHebrew('כלי')
-            ]],
-            body: rows,
-            startY: 25,
-            styles: { halign: 'center', fontSize: 10, font: 'Rubik' },
-            headStyles: { fillColor: [79, 140, 255], font: 'Rubik' }
-        });
+        const tableHead = [[
+            _reverseHebrew('סטטוס'),
+            _reverseHebrew('ימים'),
+            _reverseHebrew('תאריך דיווח'),
+            _reverseHebrew('תקלה'),
+            _reverseHebrew('כלי')
+        ]];
+
+        let currentY = 25;
+
+        // Critical faults table
+        if (criticalRows.length > 0) {
+            doc.setFontSize(14);
+            doc.setTextColor(239, 68, 68);
+            doc.text(_reverseHebrew(`תקלות קריטיות (${criticalRows.length})`), doc.internal.pageSize.getWidth() / 2, currentY, { align: 'center' });
+            doc.setTextColor(0, 0, 0);
+            currentY += 5;
+
+            doc.autoTable({
+                head: tableHead,
+                body: criticalRows,
+                startY: currentY,
+                styles: { halign: 'center', fontSize: 10, font: 'Rubik' },
+                headStyles: { fillColor: [220, 53, 53], font: 'Rubik' }
+            });
+
+            currentY = doc.lastAutoTable.finalY + 15;
+        }
+
+        // Normal faults table
+        if (normalRows.length > 0) {
+            doc.setFontSize(14);
+            doc.setTextColor(0, 0, 0);
+            doc.text(_reverseHebrew(`תקלות רגילות (${normalRows.length})`), doc.internal.pageSize.getWidth() / 2, currentY, { align: 'center' });
+            currentY += 5;
+
+            doc.autoTable({
+                head: tableHead,
+                body: normalRows,
+                startY: currentY,
+                styles: { halign: 'center', fontSize: 10, font: 'Rubik' },
+                headStyles: { fillColor: [79, 140, 255], font: 'Rubik' }
+            });
+        }
 
         doc.save('fault_tracking.pdf');
         showToast('קובץ PDF יוצא בהצלחה');
