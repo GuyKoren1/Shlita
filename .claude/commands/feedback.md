@@ -1,17 +1,7 @@
-Fetch feedback from MongoDB by running this Node.js script in the Shlita project root:
+Fetch feedback from MongoDB by running this in the Shlita project root:
 
 ```
-node -e "
-const { MongoClient } = require('mongodb');
-const uri = 'mongodb+srv://shlita-admin:huQZS3EXByl1WsTC@cluster0.qyf7xqt.mongodb.net/shlita';
-(async () => {
-  const client = new MongoClient(uri);
-  await client.connect();
-  const items = await client.db('shlita').collection('feedback').find({}).toArray();
-  console.log(JSON.stringify(items));
-  await client.close();
-})().catch(e => { console.error(e.message); process.exit(1); });
-"
+node feedback-tool.js list
 ```
 
 Display ALL feedback items in a clear Hebrew table format, grouped by type (באגים first, then הצעות).
@@ -19,6 +9,7 @@ Display ALL feedback items in a clear Hebrew table format, grouped by type (בא
 For each item show:
 - # (sequential number)
 - Type (באג / הצעה)
+- id (the internal id field, for deletion)
 - Title
 - Description (if exists)
 - Page it was reported from
@@ -32,5 +23,6 @@ After showing the list, ask the user what they want to do:
 - Delete irrelevant items (give item numbers)
 - Skip for now
 
-If the user asks to delete items, run a Node.js script to delete them from MongoDB by their `id` field.
-If the user asks to fix a bug, start working on the fix based on the description.
+To delete items, run: `node feedback-tool.js delete <id>` for each item.
+
+IMPORTANT: After fixing a bug from the feedback list, ALWAYS delete it from the database using the delete command above. Do not leave fixed bugs in the feedback list.
