@@ -37,6 +37,7 @@ async function handleLogin() {
 
     await loadState();
     initApp();
+    updateFeedbackFabVisibility();
 }
 
 async function handleLogout() {
@@ -46,4 +47,5 @@ async function handleLogout() {
     document.getElementById('loginScreen').classList.remove('hidden');
     document.getElementById('passwordInput').value = '';
     document.getElementById('loginError').textContent = '';
+    updateFeedbackFabVisibility();
 }

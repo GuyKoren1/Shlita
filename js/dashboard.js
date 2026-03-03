@@ -2,8 +2,67 @@
 let _groupChart = null;
 let _activityChart = null;
 
+function _populateDashboardFilters() {
+    const container = document.getElementById('dashboardFilters');
+    if (!container) return;
+    const config = getColumnConfig();
+    const filterColumns = config.filter(c => c.isFilter);
+    let html = '<div class="filter-group"><input type="text" id="dashSearchInput" placeholder="חיפוש חופשי..." oninput="updateDashboard()"></div>';
+    filterColumns.forEach(col => {
+        const values = [...new Set(state.personnel.map(p => p[col.key]).filter(Boolean))].sort();
+        html += `<div class="filter-group"><select id="dashFilter_${col.key}" onchange="updateDashboard()">`;
+        html += `<option value="">כל ${col.label}</option>`;
+        values.forEach(v => { html += `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`; });
+        html += '</select></div>';
+    });
+    html += '<button class="btn btn-ghost" onclick="clearDashboardFilters()">נקה סינון</button>';
+    container.innerHTML = html;
+}
+
+function _getDashboardFilteredPersonnel() {
+    const config = getColumnConfig();
+    const filterColumns = config.filter(c => c.isFilter);
+    const searchEl = document.getElementById('dashSearchInput');
+    const search = searchEl ? searchEl.value.toLowerCase() : '';
+    const activeFilters = [];
+    filterColumns.forEach(col => {
+        const el = document.getElementById('dashFilter_' + col.key);
+        if (el && el.value) activeFilters.push({ key: col.key, value: el.value });
+    });
+    return state.personnel.filter(p => {
+        for (const f of activeFilters) {
+            if (p[f.key] !== f.value) return false;
+        }
+        if (search) {
+            const allValues = Object.values(p).join(' ').toLowerCase();
+            if (!allValues.includes(search)) return false;
+        }
+        return true;
+    });
+}
+
+function clearDashboardFilters() {
+    const searchEl = document.getElementById('dashSearchInput');
+    if (searchEl) searchEl.value = '';
+    const config = getColumnConfig();
+    config.filter(c => c.isFilter).forEach(col => {
+        const el = document.getElementById('dashFilter_' + col.key);
+        if (el) el.value = '';
+    });
+    updateDashboard();
+}
+
 function updateDashboard() {
-    document.getElementById('totalPersonnel').textContent = state.personnel.length;
+    // Build filters on first render (check if already populated)
+    const filtersContainer = document.getElementById('dashboardFilters');
+    if (filtersContainer && filtersContainer.children.length === 0) {
+        _populateDashboardFilters();
+    }
+
+    const filteredPersonnel = _getDashboardFilteredPersonnel();
+    const filteredIds = new Set(filteredPersonnel.map(p => p.id));
+
+    document.getElementById('totalPersonnel').textContent = filteredPersonnel.length;
     document.getElementById('totalActivities').textContent = state.activities.length;
 
     // Fault stats
@@ -30,7 +89,7 @@ function updateDashboard() {
 
     const selectedKey = dropdown.value;
     const groupCol = filterCols.find(c => c.key === selectedKey) || filterCols[0] || dashConfig[0];
-    const groups = [...new Set(state.personnel.map(p => p[groupCol.key]).filter(Boolean))];
+    const groups = [...new Set(filteredPersonnel.map(p => p[groupCol.key]).filter(Boolean))];
     document.getElementById('totalTeams').textContent = groups.length;
     document.getElementById('teamsLabel').textContent = groupCol.label;
 
@@ -78,7 +137,7 @@ function updateDashboard() {
     // Group breakdown
     const teamContainer = document.getElementById('teamBreakdown');
     const groupCounts = {};
-    state.personnel.forEach(p => {
+    filteredPersonnel.forEach(p => {
         const val = p[groupCol.key];
         if (val) {
             groupCounts[val] = (groupCounts[val] || 0) + 1;

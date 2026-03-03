@@ -2291,6 +2291,87 @@ tr.r1-excluded .r1-cell {
     font-weight: 600;
 }
 
+/* ==================== Feedback FAB ==================== */
+.feedback-fab {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.feedback-fab.hidden {
+    display: none;
+}
+
+.feedback-fab-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(79, 140, 255, 0.4);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.feedback-fab-btn:hover {
+    transform: scale(1.08);
+    box-shadow: 0 6px 24px rgba(79, 140, 255, 0.5);
+}
+
+.feedback-fab-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    opacity: 0;
+    transform: translateY(10px) scale(0.9);
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.feedback-fab-menu.open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.feedback-fab-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform 0.15s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.feedback-fab-option:hover {
+    transform: scale(1.04);
+}
+
+.feedback-fab-option.bug {
+    background: var(--danger);
+    color: #fff;
+}
+
+.feedback-fab-option.suggestion {
+    background: var(--success);
+    color: #fff;
+}
+
 /* ==================== Responsive ==================== */
 @media (max-width: 768px) {
     /* --- Sidebar & Nav --- */
@@ -2610,6 +2691,22 @@ tr.r1-excluded .r1-cell {
     .snapshot-chip {
         padding: 4px 10px;
         font-size: 12px;
+    }
+
+    /* --- Feedback FAB --- */
+    .feedback-fab {
+        bottom: 16px;
+        left: 16px;
+    }
+
+    .feedback-fab-btn {
+        width: 46px;
+        height: 46px;
+    }
+
+    .feedback-fab-option {
+        font-size: 12px;
+        padding: 8px 14px;
     }
 }
 

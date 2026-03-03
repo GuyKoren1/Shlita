@@ -69,6 +69,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             await loadState();
             initApp();
+            updateFeedbackFabVisibility();
         }
     } catch (err) {
         console.warn('Session check failed:', err);
@@ -82,9 +83,30 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// Keyboard shortcut - Escape to close modals
+// Keyboard shortcuts
 document.addEventListener('keydown', (e) => {
+    // Escape - close modals
     if (e.key === 'Escape') {
         document.querySelectorAll('.modal-overlay:not(.hidden)').forEach(m => m.classList.add('hidden'));
+    }
+    // Ctrl+Z - undo
+    if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        // Don't undo if typing in an input/textarea
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        e.preventDefault();
+        undoState();
+    }
+    // Ctrl+Y or Ctrl+Shift+Z - redo
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        e.preventDefault();
+        redoState();
+    }
+});
+
+// Warn before leaving with unsaved changes
+window.addEventListener('beforeunload', (e) => {
+    if (_hasPendingChanges || !_lastSaveOk) {
+        e.preventDefault();
     }
 });

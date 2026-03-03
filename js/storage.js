@@ -37,11 +37,76 @@ let _lastSaveOk = true;
 let _lastSaveTime = null;
 let _hasPendingChanges = false;
 
+// Undo/Redo history
+const _undoStack = [];
+const _redoStack = [];
+const _MAX_UNDO = 30;
+let _isUndoRedo = false;
+
+function _snapshotState() {
+    return JSON.stringify(_buildPayload());
+}
+
 function saveState() {
+    // Push to undo stack (unless this save is from undo/redo itself)
+    if (!_isUndoRedo) {
+        const snap = _snapshotState();
+        _undoStack.push(snap);
+        if (_undoStack.length > _MAX_UNDO) _undoStack.shift();
+        _redoStack.length = 0; // clear redo on new change
+    }
+    _isUndoRedo = false;
+
     _hasPendingChanges = true;
     _updateSaveStatus();
     clearTimeout(_saveTimeout);
     _saveTimeout = setTimeout(() => _saveStateNow(), 300);
+}
+
+function undoState() {
+    if (_undoStack.length === 0) { showToast('אין פעולות לביטול'); return; }
+    // Save current state to redo
+    _redoStack.push(_snapshotState());
+    // Restore previous state
+    const prev = JSON.parse(_undoStack.pop());
+    _applyPayload(prev);
+    _isUndoRedo = true;
+    saveState();
+    _refreshAllViews();
+    showToast('בוטלה פעולה אחרונה');
+}
+
+function redoState() {
+    if (_redoStack.length === 0) { showToast('אין פעולות לשחזור'); return; }
+    // Save current state to undo
+    _undoStack.push(_snapshotState());
+    // Restore redo state
+    const next = JSON.parse(_redoStack.pop());
+    _applyPayload(next);
+    _isUndoRedo = true;
+    saveState();
+    _refreshAllViews();
+    showToast('שוחזרה פעולה');
+}
+
+function _applyPayload(data) {
+    state.personnel = data.personnel || [];
+    state.customColumns = data.customColumns || [];
+    state.activities = data.activities || [];
+    state.columnConfig = data.columnConfig || null;
+    state.cameras = data.cameras || [];
+    state.faultRecords = data.faultRecords || [];
+    state.report1 = data.report1 || { startDate: null, entries: {}, excluded: [] };
+    state.snapshots = data.snapshots || [];
+}
+
+function _refreshAllViews() {
+    populateFilters();
+    renderPersonnelTable();
+    renderActivities();
+    renderCameras();
+    renderFaultTracking();
+    renderSnapshotSelector();
 }
 
 function _buildPayload() {

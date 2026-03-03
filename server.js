@@ -7,6 +7,7 @@ const crypto = require('crypto');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 'data.json');
+const FEEDBACK_FILE = path.join(__dirname, 'feedback.json');
 const MONGODB_URI = process.env.MONGODB_URI;
 
 // --- Auth constants (server-side only) ---
@@ -200,6 +201,67 @@ app.post('/api/reset', requireAuth, requireAdmin, async (req, res) => {
     } catch (err) {
         console.error('Error resetting data:', err);
         res.status(500).json({ error: 'Failed to reset data' });
+    }
+});
+
+// --- Feedback Routes (file-based) ---
+
+function readFeedback() {
+    if (!fs.existsSync(FEEDBACK_FILE)) return [];
+    return JSON.parse(fs.readFileSync(FEEDBACK_FILE, 'utf8'));
+}
+
+function writeFeedback(items) {
+    fs.writeFileSync(FEEDBACK_FILE, JSON.stringify(items, null, 2), 'utf8');
+}
+
+// POST /api/feedback — any logged-in user can submit
+app.post('/api/feedback', requireAuth, (req, res) => {
+    try {
+        const { type, title, description, page } = req.body;
+        if (!type || !title) {
+            return res.status(400).json({ error: 'type and title are required' });
+        }
+        const items = readFeedback();
+        const item = {
+            id: '_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36),
+            type,
+            title,
+            description: description || '',
+            page: page || '',
+            accessLevel: req.session.accessLevel,
+            timestamp: new Date().toISOString(),
+            resolved: false
+        };
+        items.push(item);
+        writeFeedback(items);
+        res.json({ ok: true, id: item.id });
+    } catch (err) {
+        console.error('Error saving feedback:', err);
+        res.status(500).json({ error: 'Failed to save feedback' });
+    }
+});
+
+// GET /api/feedback — admin only
+app.get('/api/feedback', requireAuth, requireAdmin, (req, res) => {
+    try {
+        res.json(readFeedback());
+    } catch (err) {
+        console.error('Error reading feedback:', err);
+        res.status(500).json({ error: 'Failed to read feedback' });
+    }
+});
+
+// DELETE /api/feedback/:id — admin only
+app.delete('/api/feedback/:id', requireAuth, requireAdmin, (req, res) => {
+    try {
+        let items = readFeedback();
+        items = items.filter(f => f.id !== req.params.id);
+        writeFeedback(items);
+        res.json({ ok: true });
+    } catch (err) {
+        console.error('Error deleting feedback:', err);
+        res.status(500).json({ error: 'Failed to delete feedback' });
     }
 });
 

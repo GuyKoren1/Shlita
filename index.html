@@ -294,6 +294,7 @@
                 <div class="view-header">
                     <h2>לוח בקרה</h2>
                 </div>
+                <div id="dashboardFilters" class="filters-bar"></div>
                 <div class="dashboard-grid">
                     <div class="stat-card">
                         <div class="stat-icon blue">
@@ -735,6 +736,47 @@
         </div>
     </div>
 
+    <!-- Feedback FAB -->
+    <div id="feedbackFab" class="feedback-fab hidden">
+        <div id="feedbackMenu" class="feedback-fab-menu">
+            <button class="feedback-fab-option bug" onclick="openFeedbackModal('bug')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                דיווח באג
+            </button>
+            <button class="feedback-fab-option suggestion" onclick="openFeedbackModal('suggestion')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg>
+                הצעה לשיפור
+            </button>
+        </div>
+        <button class="feedback-fab-btn" onclick="toggleFeedbackMenu()" title="משוב">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </button>
+    </div>
+
+    <!-- Modal: Feedback -->
+    <div id="feedbackModal" class="modal-overlay hidden">
+        <div class="modal modal-sm">
+            <div class="modal-header">
+                <h3 id="feedbackModalTitle">משוב</h3>
+                <button class="modal-close" onclick="closeModal('feedbackModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>כותרת</label>
+                    <input type="text" id="feedbackTitle" placeholder="תאר בקצרה...">
+                </div>
+                <div class="form-group">
+                    <label>פירוט</label>
+                    <textarea id="feedbackDescription" placeholder="פרט את הבעיה או ההצעה..." rows="4"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('feedbackModal')">ביטול</button>
+                <button class="btn btn-primary" onclick="submitFeedback()">שלח</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast -->
     <div id="toast" class="toast hidden"></div>
 
@@ -757,6 +799,7 @@
     <script src="js/cameras.js"></script>
     <script src="js/export-import.js"></script>
     <script src="js/fault-tracking.js"></script>
+    <script src="js/feedback.js"></script>
     <script src="js/report1.js"></script>
     <script src="js/app.js"></script>
 </body>
