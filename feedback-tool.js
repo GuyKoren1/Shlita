@@ -5,7 +5,11 @@
 //   node feedback-tool.js delete <id>   — delete feedback item by id
 
 const { MongoClient } = require('mongodb');
-const uri = 'mongodb+srv://shlita-admin:huQZS3EXByl1WsTC@cluster0.qyf7xqt.mongodb.net/shlita';
+const uri = process.env.MONGODB_URI;
+if (!uri) {
+    console.error('Error: MONGODB_URI environment variable not set');
+    process.exit(1);
+}
 
 async function main() {
     const cmd = process.argv[2];

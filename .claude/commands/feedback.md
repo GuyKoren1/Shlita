@@ -1,8 +1,10 @@
 Fetch feedback from MongoDB by running this in the Shlita project root:
 
 ```
-node feedback-tool.js list
+MONGODB_URI="$MONGODB_URI" node feedback-tool.js list
 ```
+
+If MONGODB_URI is not set in the shell, read it from the Render dashboard or ask the user to provide it.
 
 Display ALL feedback items in a clear Hebrew table format, grouped by type (באגים first, then הצעות).
 
@@ -23,6 +25,6 @@ After showing the list, ask the user what they want to do:
 - Delete irrelevant items (give item numbers)
 - Skip for now
 
-To delete items, run: `node feedback-tool.js delete <id>` for each item.
+To delete items, run: `MONGODB_URI="$MONGODB_URI" node feedback-tool.js delete <id>` for each item.
 
 IMPORTANT: After fixing a bug from the feedback list, ALWAYS delete it from the database using the delete command above. Do not leave fixed bugs in the feedback list.
