@@ -363,12 +363,6 @@ async function _loadHebrewFont() {
     return _pdfFontCache;
 }
 
-function _reverseHebrew(text) {
-    if (!text) return text;
-    // Reverse whole string for RTL, then re-reverse number/Latin runs to keep them LTR
-    const reversed = text.split('').reverse().join('');
-    return reversed.replace(/[0-9A-Za-z./\-:]+/g, m => m.split('').reverse().join(''));
-}
 
 async function exportFaultsPDF() {
     const records = getActiveFaultRecords();
@@ -378,12 +372,12 @@ async function exportFaultsPDF() {
     records.forEach(vehicle => {
         vehicle.faults.forEach(fault => {
             const row = [
-                _reverseHebrew(fault.resolved ? 'טופלה' : 'פתוחה'),
+                fault.resolved ? 'טופלה' : 'פתוחה',
                 getDaysOpen(fault.reportDate, fault.closedDate).toString(),
                 formatDateHe(fault.reportDate),
-                _reverseHebrew(fault.category || '-'),
-                _reverseHebrew(fault.title),
-                _reverseHebrew(vehicle.name)
+                fault.category || '-',
+                fault.title,
+                vehicle.name
             ];
             if (fault.critical) {
                 criticalRows.push(row);
@@ -409,15 +403,15 @@ async function exportFaultsPDF() {
         doc.setFont('Rubik');
         doc.setFontSize(18);
         const todayStr = new Date().toLocaleDateString('he-IL');
-        doc.text(todayStr + ' - ' + _reverseHebrew('דוח מעקב תקלות כלים'), doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+        doc.text(`דוח מעקב תקלות כלים - ${todayStr}`, doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
 
         const tableHead = [[
-            _reverseHebrew('סטטוס'),
-            _reverseHebrew('ימים'),
-            _reverseHebrew('תאריך דיווח'),
-            _reverseHebrew('תחום'),
-            _reverseHebrew('תקלה'),
-            _reverseHebrew('כלי')
+            'סטטוס',
+            'ימים',
+            'תאריך דיווח',
+            'תחום',
+            'תקלה',
+            'כלי'
         ]];
 
         let currentY = 25;
@@ -426,7 +420,7 @@ async function exportFaultsPDF() {
         if (criticalRows.length > 0) {
             doc.setFontSize(14);
             doc.setTextColor(239, 68, 68);
-            doc.text(_reverseHebrew(`תקלות קריטיות (${criticalRows.length})`), doc.internal.pageSize.getWidth() / 2, currentY, { align: 'center' });
+            doc.text(`תקלות קריטיות (${criticalRows.length})`, doc.internal.pageSize.getWidth() / 2, currentY, { align: 'center' });
             doc.setTextColor(0, 0, 0);
             currentY += 5;
 
@@ -445,7 +439,7 @@ async function exportFaultsPDF() {
         if (normalRows.length > 0) {
             doc.setFontSize(14);
             doc.setTextColor(0, 0, 0);
-            doc.text(_reverseHebrew(`תקלות רגילות (${normalRows.length})`), doc.internal.pageSize.getWidth() / 2, currentY, { align: 'center' });
+            doc.text(`תקלות רגילות (${normalRows.length})`, doc.internal.pageSize.getWidth() / 2, currentY, { align: 'center' });
             currentY += 5;
 
             doc.autoTable({
