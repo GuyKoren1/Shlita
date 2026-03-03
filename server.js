@@ -204,25 +204,28 @@ app.post('/api/reset', requireAuth, requireAdmin, async (req, res) => {
     }
 });
 
-// --- Feedback Routes (file-based) ---
+// --- Feedback Routes (MongoDB with file-based fallback) ---
 
-function readFeedback() {
+function getFeedbackCollection() {
+    return db.collection('feedback');
+}
+
+function readFeedbackFile() {
     if (!fs.existsSync(FEEDBACK_FILE)) return [];
     return JSON.parse(fs.readFileSync(FEEDBACK_FILE, 'utf8'));
 }
 
-function writeFeedback(items) {
+function writeFeedbackFile(items) {
     fs.writeFileSync(FEEDBACK_FILE, JSON.stringify(items, null, 2), 'utf8');
 }
 
 // POST /api/feedback — any logged-in user can submit
-app.post('/api/feedback', requireAuth, (req, res) => {
+app.post('/api/feedback', requireAuth, async (req, res) => {
     try {
         const { type, title, description, page } = req.body;
         if (!type || !title) {
             return res.status(400).json({ error: 'type and title are required' });
         }
-        const items = readFeedback();
         const item = {
             id: '_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36),
             type,
@@ -233,8 +236,13 @@ app.post('/api/feedback', requireAuth, (req, res) => {
             timestamp: new Date().toISOString(),
             resolved: false
         };
-        items.push(item);
-        writeFeedback(items);
+        if (MONGODB_URI && db) {
+            await getFeedbackCollection().insertOne(item);
+        } else {
+            const items = readFeedbackFile();
+            items.push(item);
+            writeFeedbackFile(items);
+        }
         res.json({ ok: true, id: item.id });
     } catch (err) {
         console.error('Error saving feedback:', err);
@@ -243,9 +251,14 @@ app.post('/api/feedback', requireAuth, (req, res) => {
 });
 
 // GET /api/feedback — admin only
-app.get('/api/feedback', requireAuth, requireAdmin, (req, res) => {
+app.get('/api/feedback', requireAuth, requireAdmin, async (req, res) => {
     try {
-        res.json(readFeedback());
+        if (MONGODB_URI && db) {
+            const items = await getFeedbackCollection().find({}).toArray();
+            res.json(items);
+        } else {
+            res.json(readFeedbackFile());
+        }
     } catch (err) {
         console.error('Error reading feedback:', err);
         res.status(500).json({ error: 'Failed to read feedback' });
@@ -253,11 +266,15 @@ app.get('/api/feedback', requireAuth, requireAdmin, (req, res) => {
 });
 
 // DELETE /api/feedback/:id — admin only
-app.delete('/api/feedback/:id', requireAuth, requireAdmin, (req, res) => {
+app.delete('/api/feedback/:id', requireAuth, requireAdmin, async (req, res) => {
     try {
-        let items = readFeedback();
-        items = items.filter(f => f.id !== req.params.id);
-        writeFeedback(items);
+        if (MONGODB_URI && db) {
+            await getFeedbackCollection().deleteOne({ id: req.params.id });
+        } else {
+            let items = readFeedbackFile();
+            items = items.filter(f => f.id !== req.params.id);
+            writeFeedbackFile(items);
+        }
         res.json({ ok: true });
     } catch (err) {
         console.error('Error deleting feedback:', err);
