@@ -469,3 +469,110 @@ function deleteCurrentActivity() {
     closeModal('activityDetailModal');
     showToast('פעילות נמחקה');
 }
+
+// ==================== Activities PDF Export ====================
+async function exportActivitiesPDF() {
+    if (state.activities.length === 0) {
+        showToast('אין פעילויות לייצוא');
+        return;
+    }
+
+    const config = getColumnConfig();
+    const primaryCol = config.find(c => c.isPrimary) || config[0];
+
+    try {
+        showToast('מייצר PDF...');
+        const fontBase64 = await _loadHebrewFont();
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'landscape' });
+
+        doc.addFileToVFS('Rubik-Regular.ttf', fontBase64);
+        doc.addFont('Rubik-Regular.ttf', 'Rubik', 'normal');
+        doc.setFont('Rubik');
+        const pageW = doc.internal.pageSize.getWidth();
+
+        // Title
+        doc.setFontSize(18);
+        doc.text(_reverseHebrew('דוח פעילויות'), pageW / 2, 15, { align: 'center' });
+        const d = new Date();
+        const dateStr = d.getDate() + '.' + (d.getMonth() + 1) + '.' + d.getFullYear();
+        doc.setFontSize(12);
+        doc.text(dateStr, pageW / 2, 22, { align: 'center' });
+
+        let currentY = 30;
+
+        state.activities.forEach(act => {
+            const { total, completed, percent, pCount, vCount } = _getActivityTotals(act);
+            const statusText = percent === 100 ? 'הושלמה' : 'בתהליך';
+
+            // Activity header
+            doc.setFontSize(14);
+            doc.setTextColor(79, 140, 255);
+            doc.text(_reverseHebrew(`${act.name} — ${statusText} (${percent}%)`), pageW / 2, currentY, { align: 'center' });
+            doc.setTextColor(0, 0, 0);
+
+            if (act.description) {
+                doc.setFontSize(10);
+                doc.text(_reverseHebrew(act.description), pageW / 2, currentY + 6, { align: 'center' });
+                currentY += 6;
+            }
+            if (act.deadline) {
+                doc.setFontSize(10);
+                doc.text(_reverseHebrew('תאריך יעד: ' + formatDate(act.deadline)), pageW / 2, currentY + 6, { align: 'center' });
+                currentY += 6;
+            }
+
+            currentY += 8;
+
+            // Build rows
+            const rows = [];
+            act.participants.forEach(p => {
+                const person = state.personnel.find(per => per.id === p.personId);
+                rows.push([
+                    p.completedAt ? _reverseHebrew(formatDate(p.completedAt)) : '',
+                    p.completed ? _reverseHebrew('השלים') : _reverseHebrew('טרם השלים'),
+                    _reverseHebrew(person ? person[primaryCol.key] : 'לא נמצא'),
+                    _reverseHebrew('כוח אדם')
+                ]);
+            });
+            (act.vehicleParticipants || []).forEach(vp => {
+                const vehicle = (state.faultRecords || []).find(v => v.id === vp.vehicleId);
+                rows.push([
+                    vp.completedAt ? _reverseHebrew(formatDate(vp.completedAt)) : '',
+                    vp.completed ? _reverseHebrew('השלים') : _reverseHebrew('טרם השלים'),
+                    _reverseHebrew(vehicle ? vehicle.name : 'לא נמצא'),
+                    _reverseHebrew('כלי')
+                ]);
+            });
+
+            const head = [[
+                _reverseHebrew('תאריך השלמה'),
+                _reverseHebrew('סטטוס'),
+                _reverseHebrew('משתתף'),
+                _reverseHebrew('סוג')
+            ]];
+
+            doc.autoTable({
+                head,
+                body: rows,
+                startY: currentY,
+                styles: { halign: 'center', fontSize: 10, font: 'Rubik' },
+                headStyles: { fillColor: [79, 140, 255], font: 'Rubik' }
+            });
+
+            currentY = doc.lastAutoTable.finalY + 15;
+
+            // New page if running low on space
+            if (currentY > doc.internal.pageSize.getHeight() - 30) {
+                doc.addPage();
+                currentY = 20;
+            }
+        });
+
+        doc.save(`פעילויות_${dateStr}.pdf`);
+        showToast('קובץ PDF יוצא בהצלחה');
+    } catch (err) {
+        console.error('PDF export error:', err);
+        showToast('שגיאה בייצוא PDF');
+    }
+}
