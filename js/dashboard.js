@@ -157,8 +157,12 @@ function renderActivityChart() {
 
     const labels = recent.map(a => a.name.length > 20 ? a.name.slice(0, 20) + '...' : a.name);
     const completedData = recent.map(a => {
-        const total = a.participants.length;
-        const done = a.participants.filter(p => p.completed).length;
+        const pTotal = a.participants.length;
+        const pDone = a.participants.filter(p => p.completed).length;
+        const vTotal = (a.vehicleParticipants || []).length;
+        const vDone = (a.vehicleParticipants || []).filter(p => p.completed).length;
+        const total = pTotal + vTotal;
+        const done = pDone + vDone;
         return total > 0 ? Math.round((done / total) * 100) : 0;
     });
 
