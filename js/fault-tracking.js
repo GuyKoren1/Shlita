@@ -323,7 +323,7 @@ function exportFaultsXLSX() {
     const records = getActiveFaultRecords();
     const rows = [];
     records.forEach(vehicle => {
-        vehicle.faults.forEach(fault => {
+        vehicle.faults.filter(f => !f.resolved).forEach(fault => {
             rows.push({
                 'כלי': vehicle.name,
                 'תקלה': fault.title,
@@ -331,9 +331,7 @@ function exportFaultsXLSX() {
                 'קריטי': fault.critical ? 'כן' : '',
                 'פירוט': fault.description || '',
                 'תאריך דיווח': formatDateHe(fault.reportDate),
-                'ימים פתוחים': getDaysOpen(fault.reportDate, fault.closedDate),
-                'סטטוס': fault.resolved ? 'טופלה' : 'פתוחה',
-                'תאריך סגירה': fault.closedDate ? formatDateHe(fault.closedDate) : ''
+                'ימים פתוחים': getDaysOpen(fault.reportDate, fault.closedDate)
             });
         });
     });
@@ -381,9 +379,8 @@ async function exportFaultsPDF() {
     const normalRows = [];
 
     records.forEach(vehicle => {
-        vehicle.faults.forEach(fault => {
+        vehicle.faults.filter(f => !f.resolved).forEach(fault => {
             const row = [
-                _reverseHebrew(fault.resolved ? 'טופלה' : 'פתוחה'),
                 getDaysOpen(fault.reportDate, fault.closedDate).toString(),
                 _reverseHebrew(formatDateHe(fault.reportDate)),
                 _reverseHebrew(fault.category || '-'),
@@ -414,14 +411,13 @@ async function exportFaultsPDF() {
         doc.setFont('Rubik');
         const pageW = doc.internal.pageSize.getWidth();
         doc.setFontSize(18);
-        doc.text(_reverseHebrew('דוח מעקב תקלות כלים'), pageW / 2, 15, { align: 'center' });
+        doc.text(_reverseHebrew('דוח תקלות פתוחות'), pageW / 2, 15, { align: 'center' });
         const d = new Date();
         const dateStr = d.getDate() + '.' + (d.getMonth() + 1) + '.' + d.getFullYear();
         doc.setFontSize(12);
         doc.text(dateStr, pageW / 2, 22, { align: 'center' });
 
         const tableHead = [[
-            _reverseHebrew('סטטוס'),
             _reverseHebrew('ימים'),
             _reverseHebrew('תאריך דיווח'),
             _reverseHebrew('תחום'),
