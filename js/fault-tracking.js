@@ -363,6 +363,17 @@ async function _loadHebrewFont() {
     return _pdfFontCache;
 }
 
+function _reverseHebrew(text) {
+    if (!text) return text;
+    // Strip Unicode direction marks (RTL/LTR marks from toLocaleDateString etc.)
+    text = text.replace(/[\u200E\u200F\u202A-\u202E\u2066-\u2069]/g, '');
+    // Reverse whole string for RTL rendering in LTR PDF
+    const reversed = text.split('').reverse().join('');
+    // Re-reverse number/Latin runs to keep them LTR, and swap parentheses
+    return reversed
+        .replace(/[0-9A-Za-z./\-:,]+/g, m => m.split('').reverse().join(''))
+        .replace(/[()]/g, m => m === '(' ? ')' : '(');
+}
 
 async function exportFaultsPDF() {
     const records = getActiveFaultRecords();
@@ -372,12 +383,12 @@ async function exportFaultsPDF() {
     records.forEach(vehicle => {
         vehicle.faults.forEach(fault => {
             const row = [
-                fault.resolved ? 'טופלה' : 'פתוחה',
+                _reverseHebrew(fault.resolved ? 'טופלה' : 'פתוחה'),
                 getDaysOpen(fault.reportDate, fault.closedDate).toString(),
-                formatDateHe(fault.reportDate),
-                fault.category || '-',
-                fault.title,
-                vehicle.name
+                _reverseHebrew(formatDateHe(fault.reportDate)),
+                _reverseHebrew(fault.category || '-'),
+                _reverseHebrew(fault.title),
+                _reverseHebrew(vehicle.name)
             ];
             if (fault.critical) {
                 criticalRows.push(row);
@@ -403,15 +414,15 @@ async function exportFaultsPDF() {
         doc.setFont('Rubik');
         doc.setFontSize(18);
         const todayStr = new Date().toLocaleDateString('he-IL');
-        doc.text(`דוח מעקב תקלות כלים - ${todayStr}`, doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+        doc.text(_reverseHebrew(`דוח מעקב תקלות כלים - ${todayStr}`), doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
 
         const tableHead = [[
-            'סטטוס',
-            'ימים',
-            'תאריך דיווח',
-            'תחום',
-            'תקלה',
-            'כלי'
+            _reverseHebrew('סטטוס'),
+            _reverseHebrew('ימים'),
+            _reverseHebrew('תאריך דיווח'),
+            _reverseHebrew('תחום'),
+            _reverseHebrew('תקלה'),
+            _reverseHebrew('כלי')
         ]];
 
         let currentY = 25;
@@ -420,7 +431,7 @@ async function exportFaultsPDF() {
         if (criticalRows.length > 0) {
             doc.setFontSize(14);
             doc.setTextColor(239, 68, 68);
-            doc.text(`תקלות קריטיות (${criticalRows.length})`, doc.internal.pageSize.getWidth() / 2, currentY, { align: 'center' });
+            doc.text(_reverseHebrew(`תקלות קריטיות (${criticalRows.length})`), doc.internal.pageSize.getWidth() / 2, currentY, { align: 'center' });
             doc.setTextColor(0, 0, 0);
             currentY += 5;
 
@@ -439,7 +450,7 @@ async function exportFaultsPDF() {
         if (normalRows.length > 0) {
             doc.setFontSize(14);
             doc.setTextColor(0, 0, 0);
-            doc.text(`תקלות רגילות (${normalRows.length})`, doc.internal.pageSize.getWidth() / 2, currentY, { align: 'center' });
+            doc.text(_reverseHebrew(`תקלות רגילות (${normalRows.length})`), doc.internal.pageSize.getWidth() / 2, currentY, { align: 'center' });
             currentY += 5;
 
             doc.autoTable({
