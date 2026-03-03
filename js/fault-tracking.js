@@ -28,8 +28,10 @@ function renderFaultTracking() {
     // Filters
     const searchEl = document.getElementById('faultSearchInput');
     const statusEl = document.getElementById('faultStatusFilter');
+    const categoryEl = document.getElementById('faultCategoryFilter');
     const searchTerm = searchEl ? searchEl.value.toLowerCase() : '';
     const statusFilter = statusEl ? statusEl.value : '';
+    const categoryFilter = categoryEl ? categoryEl.value : '';
 
     let html = `<div class="fault-stats-bar">
         <div class="fault-stat">
@@ -56,6 +58,10 @@ function renderFaultTracking() {
         else if (statusFilter === 'critical') filteredFaults = filteredFaults.filter(f => !f.resolved && f.critical);
         else if (statusFilter === 'resolved') filteredFaults = filteredFaults.filter(f => f.resolved);
 
+        if (categoryFilter) {
+            filteredFaults = filteredFaults.filter(f => f.category === categoryFilter);
+        }
+
         if (searchTerm) {
             const vehicleMatch = vehicle.name.toLowerCase().includes(searchTerm);
             filteredFaults = filteredFaults.filter(f =>
@@ -65,7 +71,7 @@ function renderFaultTracking() {
 
         // Skip vehicles with no matching faults (unless no filters active or vehicle name matches)
         const vehicleNameMatch = searchTerm && vehicle.name.toLowerCase().includes(searchTerm);
-        if (filteredFaults.length === 0 && !vehicleNameMatch && (searchTerm || statusFilter)) return;
+        if (filteredFaults.length === 0 && !vehicleNameMatch && (searchTerm || statusFilter || categoryFilter)) return;
 
         const openFaults = filteredFaults.filter(f => !f.resolved);
         const criticalOpen = openFaults.filter(f => f.critical).length;
@@ -92,6 +98,7 @@ function renderFaultTracking() {
             html += `<table class="fault-table">
                 <thead><tr>
                     <th>תקלה</th>
+                    <th>תחום</th>
                     <th>תאריך דיווח</th>
                     <th>ימים פתוחים</th>
                     <th>סטטוס</th>
@@ -107,6 +114,7 @@ function renderFaultTracking() {
 
                 html += `<tr class="${resolvedClass} ${criticalClass}" onclick="openFaultDetail('${vehicle.id}', '${fault.id}')" style="cursor:pointer">
                     <td class="fault-title-cell">${criticalIcon}${escapeHtml(fault.title)}</td>
+                    <td>${fault.category ? escapeHtml(fault.category) : '-'}</td>
                     <td>${formatDateHe(fault.reportDate)}</td>
                     <td><span class="days-badge ${daysBadgeClass}">${days} ימים</span></td>
                     <td>${fault.resolved
@@ -179,6 +187,7 @@ function openAddFaultModal(vehicleId) {
     document.getElementById('faultModalTitle').textContent = 'תקלה חדשה';
     document.getElementById('faultTitleInput').value = '';
     document.getElementById('faultDescInput').value = '';
+    document.getElementById('faultCategoryInput').value = '';
     document.getElementById('faultDateInput').value = new Date().toISOString().split('T')[0];
     document.getElementById('faultCriticalInput').checked = false;
     openModal('faultModal');
@@ -195,6 +204,7 @@ function openEditFaultModal(vehicleId, faultId) {
     document.getElementById('faultModalTitle').textContent = 'עריכת תקלה';
     document.getElementById('faultTitleInput').value = fault.title;
     document.getElementById('faultDescInput').value = fault.description || '';
+    document.getElementById('faultCategoryInput').value = fault.category || '';
     document.getElementById('faultDateInput').value = fault.reportDate ? fault.reportDate.split('T')[0] : '';
     document.getElementById('faultCriticalInput').checked = !!fault.critical;
     openModal('faultModal');
@@ -203,6 +213,7 @@ function openEditFaultModal(vehicleId, faultId) {
 function saveFault() {
     const title = document.getElementById('faultTitleInput').value.trim();
     const description = document.getElementById('faultDescInput').value.trim();
+    const category = document.getElementById('faultCategoryInput').value;
     const dateVal = document.getElementById('faultDateInput').value;
     const critical = document.getElementById('faultCriticalInput').checked;
     if (!title) { showToast('יש להזין כותרת תקלה'); return; }
@@ -217,6 +228,7 @@ function saveFault() {
         if (!fault) return;
         fault.title = title;
         fault.description = description;
+        fault.category = category;
         fault.reportDate = new Date(dateVal).toISOString();
         fault.critical = critical;
     } else {
@@ -225,6 +237,7 @@ function saveFault() {
             id: generateId(),
             title,
             description,
+            category,
             reportDate: new Date(dateVal).toISOString(),
             closedDate: null,
             resolved: false,
@@ -279,6 +292,14 @@ function openFaultDetail(vehicleId, faultId) {
     document.getElementById('faultDetailStatus').textContent = fault.resolved ? 'טופלה' : 'פתוחה';
     document.getElementById('faultDetailStatus').className = 'fault-status-badge ' + (fault.resolved ? 'resolved' : 'open');
 
+    const categoryRow = document.getElementById('faultDetailCategoryRow');
+    if (fault.category) {
+        categoryRow.classList.remove('hidden');
+        document.getElementById('faultDetailCategory').textContent = fault.category;
+    } else {
+        categoryRow.classList.add('hidden');
+    }
+
     const criticalRow = document.getElementById('faultDetailCriticalRow');
     if (fault.critical) {
         criticalRow.classList.remove('hidden');
@@ -306,6 +327,7 @@ function exportFaultsXLSX() {
             rows.push({
                 'כלי': vehicle.name,
                 'תקלה': fault.title,
+                'תחום': fault.category || '',
                 'קריטי': fault.critical ? 'כן' : '',
                 'פירוט': fault.description || '',
                 'תאריך דיווח': formatDateHe(fault.reportDate),
@@ -359,6 +381,7 @@ async function exportFaultsPDF() {
                 _reverseHebrew(fault.resolved ? 'טופלה' : 'פתוחה'),
                 getDaysOpen(fault.reportDate, fault.closedDate).toString(),
                 formatDateHe(fault.reportDate),
+                _reverseHebrew(fault.category || '-'),
                 _reverseHebrew(fault.title),
                 _reverseHebrew(vehicle.name)
             ];
@@ -386,12 +409,13 @@ async function exportFaultsPDF() {
         doc.setFont('Rubik');
         doc.setFontSize(18);
         const todayStr = new Date().toLocaleDateString('he-IL');
-        doc.text(_reverseHebrew(`דוח מעקב תקלות כלים - ${todayStr}`), doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+        doc.text(todayStr + ' - ' + _reverseHebrew('דוח מעקב תקלות כלים'), doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
 
         const tableHead = [[
             _reverseHebrew('סטטוס'),
             _reverseHebrew('ימים'),
             _reverseHebrew('תאריך דיווח'),
+            _reverseHebrew('תחום'),
             _reverseHebrew('תקלה'),
             _reverseHebrew('כלי')
         ]];

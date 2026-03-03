@@ -224,6 +224,14 @@
                         <option value="critical">קריטיות</option>
                         <option value="resolved">טופלו</option>
                     </select>
+                    <select id="faultCategoryFilter" onchange="renderFaultTracking()">
+                        <option value="">כל התחומים</option>
+                        <option value="מערכת">מערכת</option>
+                        <option value="מכונאות">מכונאות</option>
+                        <option value="בקש">בקש</option>
+                        <option value="בקצ">בקצ</option>
+                        <option value="חשמל">חשמל</option>
+                    </select>
                 </div>
                 <div id="faultTrackingList"></div>
             </div>
@@ -640,6 +648,17 @@
                     <textarea id="faultDescInput" placeholder="פירוט מלא של התקלה..." rows="3"></textarea>
                 </div>
                 <div class="form-group">
+                    <label>תחום</label>
+                    <select id="faultCategoryInput">
+                        <option value="">ללא</option>
+                        <option value="מערכת">מערכת</option>
+                        <option value="מכונאות">מכונאות</option>
+                        <option value="בקש">בקש</option>
+                        <option value="בקצ">בקצ</option>
+                        <option value="חשמל">חשמל</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label>תאריך דיווח</label>
                     <input type="date" id="faultDateInput">
                 </div>
@@ -681,6 +700,10 @@
                     <div class="fault-detail-row">
                         <span class="fault-detail-label">סטטוס:</span>
                         <span id="faultDetailStatus"></span>
+                    </div>
+                    <div class="fault-detail-row hidden" id="faultDetailCategoryRow">
+                        <span class="fault-detail-label">תחום:</span>
+                        <span id="faultDetailCategory"></span>
                     </div>
                     <div class="fault-detail-row hidden" id="faultDetailCriticalRow">
                         <span class="fault-detail-label">דחיפות:</span>
