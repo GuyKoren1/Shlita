@@ -124,6 +124,7 @@ function renderFaultTracking() {
                         <button title="ערוך" onclick="openEditFaultModal('${vehicle.id}', '${fault.id}')">&#9998;</button>
                         <button title="${fault.critical ? 'הסר קריטי' : 'סמן קריטי'}" class="${fault.critical ? 'critical-active' : ''}" onclick="toggleFaultCritical('${vehicle.id}', '${fault.id}')">&#9888;</button>
                         <button title="${fault.resolved ? 'פתח מחדש' : 'סמן טופלה'}" onclick="toggleFaultResolved('${vehicle.id}', '${fault.id}')">${fault.resolved ? '&#8634;' : '&#10003;'}</button>
+                        <button title="מחק תקלה" onclick="deleteFault('${vehicle.id}', '${fault.id}')">&#128465;</button>
                     </td>` : ''}
                 </tr>`;
             });
@@ -274,6 +275,20 @@ function toggleFaultResolved(vehicleId, faultId) {
     saveState();
     renderFaultTracking();
     showToast(fault.resolved ? 'תקלה סומנה כטופלה' : 'תקלה נפתחה מחדש');
+}
+
+function deleteFault(vehicleId, faultId) {
+    if (state.accessLevel !== 'admin') return;
+    const vehicle = state.faultRecords.find(v => v.id === vehicleId);
+    if (!vehicle) return;
+    const fault = vehicle.faults.find(f => f.id === faultId);
+    if (!fault) return;
+    if (!confirm(`למחוק את התקלה "${fault.title}"?`)) return;
+
+    vehicle.faults = vehicle.faults.filter(f => f.id !== faultId);
+    saveState();
+    renderFaultTracking();
+    showToast('תקלה נמחקה');
 }
 
 function openFaultDetail(vehicleId, faultId) {
