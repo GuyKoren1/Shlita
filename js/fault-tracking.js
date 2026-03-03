@@ -385,7 +385,8 @@ async function exportFaultsPDF() {
         doc.addFont('Rubik-Regular.ttf', 'Rubik', 'normal');
         doc.setFont('Rubik');
         doc.setFontSize(18);
-        doc.text(_reverseHebrew('דוח מעקב תקלות כלים'), doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+        const todayStr = new Date().toLocaleDateString('he-IL');
+        doc.text(_reverseHebrew(`דוח מעקב תקלות כלים - ${todayStr}`), doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
 
         const tableHead = [[
             _reverseHebrew('סטטוס'),
