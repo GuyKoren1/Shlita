@@ -29,9 +29,11 @@ function renderFaultTracking() {
     const searchEl = document.getElementById('faultSearchInput');
     const statusEl = document.getElementById('faultStatusFilter');
     const categoryEl = document.getElementById('faultCategoryFilter');
+    const sortEl = document.getElementById('faultSortBy');
     const searchTerm = searchEl ? searchEl.value.toLowerCase() : '';
     const statusFilter = statusEl ? statusEl.value : '';
     const categoryFilter = categoryEl ? categoryEl.value : '';
+    const sortBy = sortEl ? sortEl.value : '';
 
     let html = `<div class="fault-stats-bar">
         <div class="fault-stat">
@@ -76,7 +78,22 @@ function renderFaultTracking() {
         const openFaults = filteredFaults.filter(f => !f.resolved);
         const criticalOpen = openFaults.filter(f => f.critical).length;
         const closedFaults = filteredFaults.filter(f => f.resolved);
-        const sortedFaults = [...openFaults, ...closedFaults];
+        let sortedFaults = [...openFaults, ...closedFaults];
+
+        if (sortBy) {
+            sortedFaults.sort((a, b) => {
+                if (sortBy === 'critical') {
+                    if (a.critical && !b.critical) return -1;
+                    if (!a.critical && b.critical) return 1;
+                    return getDaysOpen(b.reportDate, b.closedDate) - getDaysOpen(a.reportDate, a.closedDate);
+                }
+                if (sortBy === 'days-desc') return getDaysOpen(b.reportDate, b.closedDate) - getDaysOpen(a.reportDate, a.closedDate);
+                if (sortBy === 'days-asc') return getDaysOpen(a.reportDate, a.closedDate) - getDaysOpen(b.reportDate, b.closedDate);
+                if (sortBy === 'date-desc') return new Date(b.reportDate) - new Date(a.reportDate);
+                if (sortBy === 'date-asc') return new Date(a.reportDate) - new Date(b.reportDate);
+                return 0;
+            });
+        }
 
         html += `<div class="vehicle-card">
             <div class="vehicle-card-header">

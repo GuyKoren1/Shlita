@@ -233,6 +233,14 @@
                         <option value="בקצ">בקצ</option>
                         <option value="חשמל">חשמל</option>
                     </select>
+                    <select id="faultSortBy" onchange="renderFaultTracking()">
+                        <option value="">מיון: ברירת מחדל</option>
+                        <option value="days-desc">ימים פתוחים (יורד)</option>
+                        <option value="days-asc">ימים פתוחים (עולה)</option>
+                        <option value="date-desc">תאריך דיווח (חדש)</option>
+                        <option value="date-asc">תאריך דיווח (ישן)</option>
+                        <option value="critical">קריטיות קודם</option>
+                    </select>
                 </div>
                 <div id="faultTrackingList"></div>
             </div>
