@@ -161,17 +161,16 @@ function _calcReport1Streak(personId) {
     const dates = _getReport1DateRange();
     if (dates.length === 0) return { type: null, days: 0 };
     const entries = state.report1.entries[personId] || {};
-    // Walk backwards from today to find current streak
+    // Walk backwards from today, skip empty days at the end, then count streak
     let streakType = null;
     let streakDays = 0;
     for (let i = dates.length - 1; i >= 0; i--) {
         const val = entries[dates[i]] || '';
         if (streakType === null) {
+            // Skip trailing empty days to find the most recent reported day
             if (val === 'home' || val === 'base') {
                 streakType = val;
                 streakDays = 1;
-            } else {
-                break; // last day has no report - no streak
             }
         } else if (val === streakType) {
             streakDays++;
