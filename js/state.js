@@ -12,6 +12,7 @@ let state = {
     currentActivityId: null,
     cameras: [],
     faultRecords: [],
+    report1: { startDate: null, entries: {}, excluded: [] },
     snapshots: [],
     viewingSnapshotId: null // UI-only, not persisted
 };

@@ -1981,6 +1981,257 @@ h4 {
     min-width: 120px;
 }
 
+/* ==================== Report 1 - Attendance ==================== */
+.report1-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 16px;
+    border-bottom: 2px solid var(--border);
+}
+
+.r1-tab {
+    padding: 10px 24px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.r1-tab:hover {
+    color: var(--text-primary);
+}
+
+.r1-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+}
+
+.report1-date-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.report1-date-row input[type="date"] {
+    padding: 6px 12px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 13px;
+    outline: none;
+}
+
+.report1-date-row input[type="date"]:focus {
+    border-color: var(--accent);
+}
+
+.report1-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.report1-table th,
+.report1-table td {
+    border: 1px solid var(--border);
+    text-align: center;
+    white-space: nowrap;
+}
+
+.report1-table th {
+    background: var(--bg-tertiary);
+    padding: 8px 6px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.r1-name-col {
+    text-align: right !important;
+    padding: 8px 12px !important;
+    min-width: 120px;
+    position: sticky;
+    right: 0;
+    background: var(--bg-secondary);
+    z-index: 1;
+    font-weight: 600;
+}
+
+.report1-table th.r1-name-col {
+    z-index: 3;
+    background: var(--bg-tertiary);
+}
+
+.r1-date-col {
+    min-width: 52px;
+    padding: 6px 4px;
+    font-size: 11px;
+    line-height: 1.3;
+}
+
+.r1-day-name {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+.r1-excluded-col {
+    min-width: 60px;
+    padding: 6px !important;
+}
+
+.r1-cell {
+    padding: 6px 4px !important;
+    cursor: pointer;
+    user-select: none;
+    font-size: 16px;
+    min-width: 44px;
+    height: 38px;
+    transition: background var(--transition);
+}
+
+.r1-cell:hover {
+    background: var(--bg-hover);
+}
+
+.r1-home {
+    background: rgba(251, 191, 36, 0.15);
+}
+
+.r1-base {
+    background: rgba(52, 211, 153, 0.15);
+}
+
+.r1-shabbat {
+    background: rgba(167, 139, 250, 0.08);
+}
+
+.r1-cell.r1-shabbat.r1-home {
+    background: rgba(251, 191, 36, 0.15);
+}
+
+.r1-cell.r1-shabbat.r1-base {
+    background: rgba(52, 211, 153, 0.15);
+}
+
+tr.r1-excluded {
+    opacity: 0.4;
+}
+
+tr.r1-excluded td {
+    background: var(--bg-tertiary) !important;
+}
+
+tr.r1-excluded .r1-cell {
+    cursor: default;
+    pointer-events: none;
+}
+
+/* Report1 View Tab */
+.report1-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.report1-filters .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.report1-filters input[type="number"] {
+    padding: 6px 8px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 13px;
+    outline: none;
+    text-align: center;
+}
+
+.report1-filters input[type="number"]:focus {
+    border-color: var(--accent);
+}
+
+.report1-category-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.report1-category-filters select {
+    padding: 6px 12px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 13px;
+    cursor: pointer;
+    outline: none;
+}
+
+.report1-category-filters select:focus {
+    border-color: var(--accent);
+}
+
+.report1-summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.report1-summary-table th {
+    background: var(--bg-tertiary);
+    padding: 10px 14px;
+    text-align: right;
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+.report1-summary-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+}
+
+.report1-summary-table tr:hover td {
+    background: var(--bg-hover);
+}
+
+.r1-home-cell {
+    color: var(--warning);
+    font-weight: 600;
+}
+
+.r1-base-cell {
+    color: var(--success);
+    font-weight: 600;
+}
+
 /* ==================== Responsive ==================== */
 @media (max-width: 768px) {
     /* --- Sidebar & Nav --- */
@@ -2256,6 +2507,40 @@ h4 {
 
     .detail-filters {
         flex-direction: column;
+    }
+
+    /* --- Report1 --- */
+    .report1-tabs {
+        margin-bottom: 12px;
+    }
+
+    .r1-tab {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+
+    .report1-date-row {
+        flex-wrap: wrap;
+    }
+
+    .report1-filters {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 10px 12px;
+    }
+
+    .report1-table {
+        min-width: 600px;
+    }
+
+    .r1-cell {
+        min-width: 36px;
+        font-size: 14px;
+    }
+
+    .r1-date-col {
+        min-width: 40px;
+        font-size: 10px;
     }
 
     /* --- Snapshot bar --- */

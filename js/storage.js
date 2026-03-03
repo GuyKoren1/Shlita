@@ -10,6 +10,7 @@ async function loadState() {
             state.columnConfig = data.columnConfig || null;
             state.cameras = data.cameras || [];
             state.faultRecords = data.faultRecords || [];
+            state.report1 = data.report1 || { startDate: null, entries: {}, excluded: [] };
             state.snapshots = data.snapshots || [];
             return;
         }
@@ -26,6 +27,7 @@ async function loadState() {
         state.columnConfig = parsed.columnConfig || null;
         state.cameras = parsed.cameras || [];
         state.faultRecords = parsed.faultRecords || [];
+        state.report1 = parsed.report1 || { startDate: null, entries: {}, excluded: [] };
         state.snapshots = parsed.snapshots || [];
     }
 }
@@ -45,6 +47,7 @@ async function _saveStateNow() {
         columnConfig: state.columnConfig,
         cameras: state.cameras,
         faultRecords: state.faultRecords,
+        report1: state.report1,
         snapshots: state.snapshots
     };
     try {

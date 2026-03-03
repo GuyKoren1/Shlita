@@ -60,7 +60,8 @@ function addNewDay() {
         customColumns: JSON.parse(JSON.stringify(state.customColumns)),
         columnConfig: state.columnConfig ? JSON.parse(JSON.stringify(state.columnConfig)) : null,
         cameras: JSON.parse(JSON.stringify(state.cameras)),
-        faultRecords: JSON.parse(JSON.stringify(state.faultRecords))
+        faultRecords: JSON.parse(JSON.stringify(state.faultRecords)),
+        report1: JSON.parse(JSON.stringify(state.report1))
     };
 
     state.snapshots.push(snapshot);
