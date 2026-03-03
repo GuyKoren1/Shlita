@@ -68,7 +68,7 @@ function updateDashboard() {
                 <span class="activity-mini-name">${escapeHtml(act.name)}</span>
                 <div class="activity-mini-progress">
                     <div class="mini-bar"><div class="mini-fill" style="width:${percent}%"></div></div>
-                    <span>${percent}%</span>
+                    <span>${completed}/${total} (${percent}%)</span>
                 </div>
             </div>`;
         });
