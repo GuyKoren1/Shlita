@@ -76,6 +76,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+// Keyboard support for nav items (Enter/Space to activate)
+document.addEventListener('keydown', (e) => {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('nav-item')) {
+        e.preventDefault();
+        e.target.click();
+    }
+});
+
 // Close modal on overlay click
 document.addEventListener('click', (e) => {
     if (e.target.classList.contains('modal-overlay')) {

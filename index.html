@@ -11,7 +11,7 @@
 <body>
     <!-- Login Screen -->
     <div id="loginScreen" class="login-screen">
-        <button id="loginThemeToggle" class="login-theme-btn" onclick="toggleTheme()" title="החלף עיצוב">
+        <button id="loginThemeToggle" class="login-theme-btn" onclick="toggleTheme()" aria-label="החלף עיצוב">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
         </button>
         <div class="login-card">
@@ -25,7 +25,7 @@
             <h1>שליטה</h1>
             <p class="login-subtitle">מערכת ניהול כוח אדם</p>
             <div class="login-form">
-                <input type="password" id="passwordInput" placeholder="הזן סיסמה" autocomplete="off">
+                <input type="password" id="passwordInput" placeholder="הזן סיסמה" aria-label="סיסמה" autocomplete="off">
                 <button id="loginBtn" onclick="handleLogin()">כניסה</button>
                 <p id="loginError" class="login-error"></p>
             </div>
@@ -39,7 +39,7 @@
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
         <!-- Sidebar Overlay (mobile) -->
-        <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+        <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()" role="button" tabindex="-1" aria-label="סגור תפריט"></div>
         <!-- Sidebar -->
         <nav class="sidebar">
             <div class="sidebar-header">
@@ -47,34 +47,34 @@
                 <span id="accessLevel" class="access-badge"></span>
             </div>
             <ul class="nav-menu">
-                <li class="nav-item active" data-view="personnel" onclick="switchView('personnel')">
+                <li class="nav-item active" data-view="personnel" onclick="switchView('personnel')" role="button" tabindex="0">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                     <span>כוח אדם</span>
                 </li>
-                <li class="nav-item" data-view="activities" onclick="switchView('activities')">
+                <li class="nav-item" data-view="activities" onclick="switchView('activities')" role="button" tabindex="0">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
                     <span>פעילויות</span>
                 </li>
-                <li class="nav-item" data-view="cameras" onclick="switchView('cameras')">
+                <li class="nav-item" data-view="cameras" onclick="switchView('cameras')" role="button" tabindex="0">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
                     <span>צלמים</span>
                 </li>
-                <li class="nav-item" data-view="faultTracking" onclick="switchView('faultTracking')">
+                <li class="nav-item" data-view="faultTracking" onclick="switchView('faultTracking')" role="button" tabindex="0">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                     <span>תקלות כלים</span>
                 </li>
-                <li class="nav-item" data-view="report1" onclick="switchView('report1')">
+                <li class="nav-item" data-view="report1" onclick="switchView('report1')" role="button" tabindex="0">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                     <span>דוח נוכחות</span>
                 </li>
-                <li class="nav-item" data-view="dashboard" onclick="switchView('dashboard')">
+                <li class="nav-item" data-view="dashboard" onclick="switchView('dashboard')" role="button" tabindex="0">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                     <span>לוח בקרה</span>
                 </li>
             </ul>
             <div class="sidebar-footer">
-                <div id="saveStatus" class="save-status ok"></div>
-                <button id="themeToggle" class="theme-toggle" onclick="toggleTheme()" title="החלף עיצוב">
+                <div id="saveStatus" class="save-status ok" role="status" aria-live="polite"></div>
+                <button id="themeToggle" class="theme-toggle" onclick="toggleTheme()" aria-label="החלף עיצוב">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
                 </button>
                 <button class="logout-btn" onclick="handleLogout()">
@@ -262,7 +262,7 @@
                 </div>
                 <div id="report1EntryTab">
                     <div class="report1-date-row">
-                        <label>תאריך התחלה:</label>
+                        <label for="report1StartDate">תאריך התחלה:</label>
                         <input type="date" id="report1StartDate" onchange="setReport1StartDate(this.value)">
                     </div>
                     <div class="table-container">
@@ -385,11 +385,11 @@
     </div>
 
     <!-- Modal: Add Person -->
-    <div id="addPersonModal" class="modal-overlay hidden">
+    <div id="addPersonModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="addPersonModalTitle">
         <div class="modal">
             <div class="modal-header">
                 <h3 id="addPersonModalTitle">הוסף איש חדש</h3>
-                <button class="modal-close" onclick="closeModal('addPersonModal')">&times;</button>
+                <button class="modal-close" aria-label="סגור" onclick="closeModal('addPersonModal')">&times;</button>
             </div>
             <div class="modal-body">
                 <form id="addPersonForm">
@@ -404,19 +404,19 @@
     </div>
 
     <!-- Modal: Bulk Edit -->
-    <div id="bulkEditModal" class="modal-overlay hidden">
+    <div id="bulkEditModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="bulkEditModalTitle">
         <div class="modal modal-sm">
             <div class="modal-header">
-                <h3>עריכה מרובה</h3>
-                <button class="modal-close" onclick="closeModal('bulkEditModal')">&times;</button>
+                <h3 id="bulkEditModalTitle">עריכה מרובה</h3>
+                <button class="modal-close" aria-label="סגור" onclick="closeModal('bulkEditModal')">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label>בחר שדה</label>
+                    <label for="bulkEditField">בחר שדה</label>
                     <select id="bulkEditField"></select>
                 </div>
                 <div class="form-group">
-                    <label>ערך חדש</label>
+                    <label for="bulkEditValue">ערך חדש</label>
                     <input type="text" id="bulkEditValue" placeholder="הזן ערך חדש">
                 </div>
             </div>
@@ -428,19 +428,19 @@
     </div>
 
     <!-- Modal: Add Column -->
-    <div id="addColumnModal" class="modal-overlay hidden">
+    <div id="addColumnModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="addColumnModalTitle">
         <div class="modal modal-sm">
             <div class="modal-header">
-                <h3>הוסף עמודה חדשה</h3>
-                <button class="modal-close" onclick="closeModal('addColumnModal')">&times;</button>
+                <h3 id="addColumnModalTitle">הוסף עמודה חדשה</h3>
+                <button class="modal-close" aria-label="סגור" onclick="closeModal('addColumnModal')">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label>שם העמודה</label>
+                    <label for="columnName">שם העמודה</label>
                     <input type="text" id="columnName" placeholder="הזן שם עמודה">
                 </div>
                 <div class="form-group">
-                    <label>סוג</label>
+                    <label for="columnType">סוג</label>
                     <select id="columnType">
                         <option value="text">טקסט</option>
                         <option value="number">מספר</option>
@@ -457,23 +457,23 @@
     </div>
 
     <!-- Modal: New Activity -->
-    <div id="newActivityModal" class="modal-overlay hidden">
+    <div id="newActivityModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="newActivityModalTitle">
         <div class="modal modal-lg">
             <div class="modal-header">
-                <h3>פעילות חדשה</h3>
-                <button class="modal-close" onclick="closeModal('newActivityModal')">&times;</button>
+                <h3 id="newActivityModalTitle">פעילות חדשה</h3>
+                <button class="modal-close" aria-label="סגור" onclick="closeModal('newActivityModal')">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label>שם הפעילות</label>
+                    <label for="activityName">שם הפעילות</label>
                     <input type="text" id="activityName" placeholder="הזן שם פעילות">
                 </div>
                 <div class="form-group">
-                    <label>תיאור</label>
+                    <label for="activityDescription">תיאור</label>
                     <textarea id="activityDescription" placeholder="תיאור הפעילות" rows="2"></textarea>
                 </div>
                 <div class="form-group">
-                    <label>תאריך יעד</label>
+                    <label for="activityDeadline">תאריך יעד</label>
                     <input type="date" id="activityDeadline">
                 </div>
 
@@ -502,11 +502,11 @@
     </div>
 
     <!-- Modal: Activity Detail -->
-    <div id="activityDetailModal" class="modal-overlay hidden">
+    <div id="activityDetailModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="activityDetailTitle">
         <div class="modal modal-lg">
             <div class="modal-header">
                 <h3 id="activityDetailTitle"></h3>
-                <button class="modal-close" onclick="closeModal('activityDetailModal')">&times;</button>
+                <button class="modal-close" aria-label="סגור" onclick="closeModal('activityDetailModal')">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="activity-detail-info">
@@ -550,11 +550,11 @@
     </div>
 
     <!-- Modal: Import Data -->
-    <div id="importModal" class="modal-overlay hidden">
+    <div id="importModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="importModalTitle">
         <div class="modal modal-lg">
             <div class="modal-header">
-                <h3>ייבוא נתונים</h3>
-                <button class="modal-close" onclick="closeModal('importModal')">&times;</button>
+                <h3 id="importModalTitle">ייבוא נתונים</h3>
+                <button class="modal-close" aria-label="סגור" onclick="closeModal('importModal')">&times;</button>
             </div>
             <div class="modal-body">
                 <!-- Step 1: File Upload -->
@@ -600,23 +600,23 @@
     </div>
 
     <!-- Modal: Add Tank -->
-    <div id="addTankModal" class="modal-overlay hidden">
+    <div id="addTankModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="addTankModalTitle">
         <div class="modal modal-sm">
             <div class="modal-header">
-                <h3>הוסף טנק חדש</h3>
-                <button class="modal-close" onclick="closeModal('addTankModal')">&times;</button>
+                <h3 id="addTankModalTitle">הוסף טנק חדש</h3>
+                <button class="modal-close" aria-label="סגור" onclick="closeModal('addTankModal')">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label>שם/מספר טנק</label>
+                    <label for="newTankName">שם/מספר טנק</label>
                     <input type="text" id="newTankName" placeholder="לדוגמה: טנק 5">
                 </div>
                 <div class="form-group">
-                    <label>מפקד</label>
+                    <label for="newTankCommander">מפקד</label>
                     <input type="text" id="newTankCommander" placeholder="שם מפקד">
                 </div>
                 <div class="form-group">
-                    <label>חטיבת מקור</label>
+                    <label for="newTankBrigade">חטיבת מקור</label>
                     <input type="text" id="newTankBrigade" placeholder="חטיבת מקור">
                 </div>
             </div>
@@ -628,15 +628,15 @@
     </div>
 
     <!-- Modal: Add Vehicle -->
-    <div id="addVehicleModal" class="modal-overlay hidden">
+    <div id="addVehicleModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="addVehicleModalTitle">
         <div class="modal modal-sm">
             <div class="modal-header">
-                <h3>הוסף כלי חדש</h3>
-                <button class="modal-close" onclick="closeModal('addVehicleModal')">&times;</button>
+                <h3 id="addVehicleModalTitle">הוסף כלי חדש</h3>
+                <button class="modal-close" aria-label="סגור" onclick="closeModal('addVehicleModal')">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label>שם הכלי</label>
+                    <label for="vehicleNameInput">שם הכלי</label>
                     <input type="text" id="vehicleNameInput" placeholder="לדוגמה: כלי 320">
                 </div>
             </div>
@@ -648,23 +648,23 @@
     </div>
 
     <!-- Modal: Add/Edit Fault -->
-    <div id="faultModal" class="modal-overlay hidden">
+    <div id="faultModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="faultModalTitle">
         <div class="modal">
             <div class="modal-header">
                 <h3 id="faultModalTitle">תקלה חדשה</h3>
-                <button class="modal-close" onclick="closeModal('faultModal')">&times;</button>
+                <button class="modal-close" aria-label="סגור" onclick="closeModal('faultModal')">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label>כותרת תקלה</label>
+                    <label for="faultTitleInput">כותרת תקלה</label>
                     <input type="text" id="faultTitleInput" placeholder="תיאור קצר של התקלה">
                 </div>
                 <div class="form-group">
-                    <label>פירוט</label>
+                    <label for="faultDescInput">פירוט</label>
                     <textarea id="faultDescInput" placeholder="פירוט מלא של התקלה..." rows="3"></textarea>
                 </div>
                 <div class="form-group">
-                    <label>תחום</label>
+                    <label for="faultCategoryInput">תחום</label>
                     <select id="faultCategoryInput">
                         <option value="">ללא</option>
                         <option value="מערכת">מערכת</option>
@@ -675,7 +675,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>תאריך דיווח</label>
+                    <label for="faultDateInput">תאריך דיווח</label>
                     <input type="date" id="faultDateInput">
                 </div>
                 <div class="form-group form-group-inline">
@@ -693,11 +693,11 @@
     </div>
 
     <!-- Modal: Fault Detail -->
-    <div id="faultDetailModal" class="modal-overlay hidden">
+    <div id="faultDetailModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="faultDetailTitle">
         <div class="modal">
             <div class="modal-header">
                 <h3 id="faultDetailTitle"></h3>
-                <button class="modal-close" onclick="closeModal('faultDetailModal')">&times;</button>
+                <button class="modal-close" aria-label="סגור" onclick="closeModal('faultDetailModal')">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="fault-detail-grid">
@@ -758,25 +758,25 @@
                 הצעה לשיפור
             </button>
         </div>
-        <button class="feedback-fab-btn" onclick="toggleFeedbackMenu()" title="משוב">
+        <button class="feedback-fab-btn" onclick="toggleFeedbackMenu()" aria-label="משוב">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         </button>
     </div>
 
     <!-- Modal: Feedback -->
-    <div id="feedbackModal" class="modal-overlay hidden">
+    <div id="feedbackModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="feedbackModalTitle">
         <div class="modal modal-sm">
             <div class="modal-header">
                 <h3 id="feedbackModalTitle">משוב</h3>
-                <button class="modal-close" onclick="closeModal('feedbackModal')">&times;</button>
+                <button class="modal-close" aria-label="סגור" onclick="closeModal('feedbackModal')">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label>כותרת</label>
+                    <label for="feedbackTitle">כותרת</label>
                     <input type="text" id="feedbackTitle" placeholder="תאר בקצרה...">
                 </div>
                 <div class="form-group">
-                    <label>פירוט</label>
+                    <label for="feedbackDescription">פירוט</label>
                     <textarea id="feedbackDescription" placeholder="פרט את הבעיה או ההצעה..." rows="4"></textarea>
                 </div>
             </div>
@@ -788,11 +788,11 @@
     </div>
 
     <!-- Modal: Feedback List (admin) -->
-    <div id="feedbackListModal" class="modal-overlay hidden">
+    <div id="feedbackListModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="feedbackListModalTitle">
         <div class="modal modal-lg">
             <div class="modal-header">
-                <h3>דיווחים ומשובים</h3>
-                <button class="modal-close" onclick="closeModal('feedbackListModal')">&times;</button>
+                <h3 id="feedbackListModalTitle">דיווחים ומשובים</h3>
+                <button class="modal-close" aria-label="סגור" onclick="closeModal('feedbackListModal')">&times;</button>
             </div>
             <div class="modal-body">
                 <div id="feedbackListContent" class="feedback-list"></div>
@@ -804,7 +804,7 @@
     </div>
 
     <!-- Toast -->
-    <div id="toast" class="toast hidden"></div>
+    <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
     <script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>

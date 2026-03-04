@@ -27,12 +27,22 @@ function pdfDate(dateStr) {
     return d.getDate() + '.' + (d.getMonth() + 1) + '.' + d.getFullYear();
 }
 
+let _lastFocusedElement = null;
+
 function openModal(id) {
-    document.getElementById(id).classList.remove('hidden');
+    _lastFocusedElement = document.activeElement;
+    const modal = document.getElementById(id);
+    modal.classList.remove('hidden');
+    const focusable = modal.querySelector('input:not([type="hidden"]):not([style*="display:none"]), textarea, select, button:not(.modal-close)');
+    if (focusable) requestAnimationFrame(() => focusable.focus());
 }
 
 function closeModal(id) {
     document.getElementById(id).classList.add('hidden');
+    if (_lastFocusedElement) {
+        _lastFocusedElement.focus();
+        _lastFocusedElement = null;
+    }
 }
 
 function showToast(message) {
