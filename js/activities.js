@@ -505,10 +505,10 @@ async function exportActivitiesPDF() {
             const { total, completed, percent, pCount, vCount } = _getActivityTotals(act);
             const statusText = percent === 100 ? 'הושלמה' : 'בתהליך';
 
-            // Activity header
+            // Activity header — keep numbers separate from Hebrew to avoid _reverseHebrew issues
             doc.setFontSize(14);
             doc.setTextColor(79, 140, 255);
-            doc.text(_reverseHebrew(`${act.name} — ${statusText} (${percent}%)`), pageW / 2, currentY, { align: 'center' });
+            doc.text(`(${percent}%) ` + _reverseHebrew(statusText) + ' — ' + _reverseHebrew(act.name), pageW / 2, currentY, { align: 'center' });
             doc.setTextColor(0, 0, 0);
 
             if (act.description) {
