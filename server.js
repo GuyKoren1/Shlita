@@ -1,10 +1,12 @@
 const express = require('express');
 const session = require('express-session');
+const compression = require('compression');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
 const app = express();
+app.use(compression());
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 'data.json');
 const FEEDBACK_FILE = path.join(__dirname, 'feedback.json');
@@ -30,7 +32,14 @@ app.use(session({
     }
 }));
 
-app.use(express.static(__dirname));
+app.use(express.static(__dirname, {
+    maxAge: '1d',
+    setHeaders(res, filePath) {
+        if (filePath.endsWith('.html')) {
+            res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+        }
+    }
+}));
 
 // --- Auth middleware ---
 function requireAuth(req, res, next) {

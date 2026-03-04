@@ -70,23 +70,23 @@ function renderReport1Entry() {
     const body = document.getElementById('report1EntryBody');
 
     // Header row
-    let headHtml = '<tr><th class="r1-name-col">שם</th>';
+    const hp = ['<tr><th class="r1-name-col">שם</th>'];
     dates.forEach(dateStr => {
         const isShabbat = new Date(dateStr + 'T00:00:00').getDay() === 6;
-        headHtml += `<th class="r1-date-col${isShabbat ? ' r1-shabbat' : ''}">${_formatShortDate(dateStr)}<br><span class="r1-day-name">${_getDayName(dateStr)}</span></th>`;
+        hp.push(`<th class="r1-date-col${isShabbat ? ' r1-shabbat' : ''}">${_formatShortDate(dateStr)}<br><span class="r1-day-name">${_getDayName(dateStr)}</span></th>`);
     });
-    headHtml += '<th class="r1-excluded-col">לא רלוונטי</th></tr>';
-    head.innerHTML = headHtml;
+    hp.push('<th class="r1-excluded-col">לא רלוונטי</th></tr>');
+    head.innerHTML = hp.join('');
 
     // Body rows
     const personnel = state.personnel;
-    let bodyHtml = '';
+    const bp = [];
     personnel.forEach(person => {
         const isExcluded = state.report1.excluded.includes(person.id);
         const rowClass = isExcluded ? 'r1-excluded' : '';
         const name = escapeHtml(person[primaryCol.key] || person.name || '');
-        bodyHtml += `<tr class="${rowClass}">`;
-        bodyHtml += `<td class="r1-name-col">${name}</td>`;
+        bp.push(`<tr class="${rowClass}">`);
+        bp.push(`<td class="r1-name-col">${name}</td>`);
         dates.forEach(dateStr => {
             const val = (state.report1.entries[person.id] || {})[dateStr] || '';
             let cellContent = '';
@@ -96,15 +96,15 @@ function renderReport1Entry() {
             const isShabbat = new Date(dateStr + 'T00:00:00').getDay() === 6;
             if (isShabbat) cellClass += ' r1-shabbat';
             const onclick = isAdmin ? `onclick="cycleReport1Cell('${person.id}','${dateStr}')"` : '';
-            bodyHtml += `<td class="${cellClass}" ${onclick}>${cellContent}</td>`;
+            bp.push(`<td class="${cellClass}" ${onclick}>${cellContent}</td>`);
         });
         // Excluded checkbox
         const checkedAttr = isExcluded ? 'checked' : '';
         const disabledAttr = !isAdmin ? 'disabled' : '';
-        bodyHtml += `<td class="r1-excluded-col"><input type="checkbox" ${checkedAttr} ${disabledAttr} onchange="toggleReport1Excluded('${person.id}')"></td>`;
-        bodyHtml += '</tr>';
+        bp.push(`<td class="r1-excluded-col"><input type="checkbox" ${checkedAttr} ${disabledAttr} onchange="toggleReport1Excluded('${person.id}')"></td>`);
+        bp.push('</tr>');
     });
-    body.innerHTML = bodyHtml;
+    body.innerHTML = bp.join('');
 }
 
 function cycleReport1Cell(personId, dateStr) {

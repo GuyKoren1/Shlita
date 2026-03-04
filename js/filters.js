@@ -6,29 +6,29 @@ function populateFilters() {
 
     // Build main filters container
     const mainContainer = document.getElementById('filtersContainer');
-    let mainHtml = '<div class="filter-group"><input type="text" id="searchInput" placeholder="חיפוש חופשי..." oninput="applyFilters()"></div>';
+    const m = ['<div class="filter-group"><input type="text" id="searchInput" placeholder="חיפוש חופשי..." oninput="applyFilters()"></div>'];
     filterColumns.forEach(col => {
         const values = [...new Set(activePersonnel.map(p => p[col.key]).filter(Boolean))].sort();
-        mainHtml += `<div class="filter-group"><select id="filter_${col.key}" onchange="applyFilters()">`;
-        mainHtml += `<option value="">כל ${col.label}</option>`;
-        values.forEach(v => { mainHtml += `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`; });
-        mainHtml += `</select></div>`;
+        m.push(`<div class="filter-group"><select id="filter_${col.key}" onchange="applyFilters()">`);
+        m.push(`<option value="">כל ${col.label}</option>`);
+        values.forEach(v => { m.push(`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`); });
+        m.push(`</select></div>`);
     });
-    mainHtml += '<button class="btn btn-ghost" onclick="clearFilters()">נקה סינון</button>';
-    mainHtml += '<span id="personnelCount" class="count-badge"></span>';
-    mainContainer.innerHTML = mainHtml;
+    m.push('<button class="btn btn-ghost" onclick="clearFilters()">נקה סינון</button>');
+    m.push('<span id="personnelCount" class="count-badge"></span>');
+    mainContainer.innerHTML = m.join('');
 
     // Build activity modal filters container
     const actContainer = document.getElementById('actFiltersContainer');
-    let actHtml = '<div class="filter-group"><input type="text" id="actSearchInput" placeholder="חיפוש..." oninput="filterActivityParticipants()"></div>';
+    const a = ['<div class="filter-group"><input type="text" id="actSearchInput" placeholder="חיפוש..." oninput="filterActivityParticipants()"></div>'];
     filterColumns.forEach(col => {
         const values = [...new Set(state.personnel.map(p => p[col.key]).filter(Boolean))].sort();
-        actHtml += `<div class="filter-group"><select id="actFilter_${col.key}" onchange="filterActivityParticipants()">`;
-        actHtml += `<option value="">כל ${col.label}</option>`;
-        values.forEach(v => { actHtml += `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`; });
-        actHtml += `</select></div>`;
+        a.push(`<div class="filter-group"><select id="actFilter_${col.key}" onchange="filterActivityParticipants()">`);
+        a.push(`<option value="">כל ${col.label}</option>`);
+        values.forEach(v => { a.push(`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`); });
+        a.push(`</select></div>`);
     });
-    actContainer.innerHTML = actHtml;
+    actContainer.innerHTML = a.join('');
 }
 
 function getFilteredPersonnel() {

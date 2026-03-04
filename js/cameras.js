@@ -9,48 +9,48 @@ function renderCameras() {
     const tbody = document.getElementById('camerasBody');
 
     // Header: # | ציוד | tank1 | tank2 | ... | (actions if admin)
-    let headHtml = '<tr class="camera-header-row"><th>#</th><th>ציוד</th>';
+    const hp = ['<tr class="camera-header-row"><th>#</th><th>ציוד</th>'];
     cameras.forEach((c, idx) => {
         if (canEdit) {
-            headHtml += `<th>${escapeHtml(c.tank)} <span class="col-delete-btn" onclick="deleteTank(${idx})" title="מחק טנק">&times;</span></th>`;
+            hp.push(`<th>${escapeHtml(c.tank)} <span class="col-delete-btn" onclick="deleteTank(${idx})" title="מחק טנק">&times;</span></th>`);
         } else {
-            headHtml += `<th>${escapeHtml(c.tank)}</th>`;
+            hp.push(`<th>${escapeHtml(c.tank)}</th>`);
         }
     });
-    if (canEdit) headHtml += '<th></th>';
-    headHtml += '</tr>';
-    thead.innerHTML = headHtml;
+    if (canEdit) hp.push('<th></th>');
+    hp.push('</tr>');
+    thead.innerHTML = hp.join('');
 
-    let bodyHtml = '';
+    const bp = [];
 
     // Commander row
-    bodyHtml += '<tr class="camera-commander-row"><td></td><td style="text-align:right">מפקד</td>';
+    bp.push('<tr class="camera-commander-row"><td></td><td style="text-align:right">מפקד</td>');
     cameras.forEach((c, tankIdx) => {
         if (canEdit) {
-            bodyHtml += `<td class="camera-info-cell" ondblclick="editCameraInfoCell(event, ${tankIdx}, 'commander')">${escapeHtml(c.commander)}</td>`;
+            bp.push(`<td class="camera-info-cell" ondblclick="editCameraInfoCell(event, ${tankIdx}, 'commander')">${escapeHtml(c.commander)}</td>`);
         } else {
-            bodyHtml += `<td>${escapeHtml(c.commander)}</td>`;
+            bp.push(`<td>${escapeHtml(c.commander)}</td>`);
         }
     });
-    if (canEdit) bodyHtml += '<td></td>';
-    bodyHtml += '</tr>';
+    if (canEdit) bp.push('<td></td>');
+    bp.push('</tr>');
 
     // Source brigade row
-    bodyHtml += '<tr class="camera-brigade-row"><td></td><td style="text-align:right">חטיבת מקור</td>';
+    bp.push('<tr class="camera-brigade-row"><td></td><td style="text-align:right">חטיבת מקור</td>');
     cameras.forEach((c, tankIdx) => {
         if (canEdit) {
-            bodyHtml += `<td class="camera-info-cell" ondblclick="editCameraInfoCell(event, ${tankIdx}, 'sourceBrigade')">${escapeHtml(c.sourceBrigade)}</td>`;
+            bp.push(`<td class="camera-info-cell" ondblclick="editCameraInfoCell(event, ${tankIdx}, 'sourceBrigade')">${escapeHtml(c.sourceBrigade)}</td>`);
         } else {
-            bodyHtml += `<td>${escapeHtml(c.sourceBrigade)}</td>`;
+            bp.push(`<td>${escapeHtml(c.sourceBrigade)}</td>`);
         }
     });
-    if (canEdit) bodyHtml += '<td></td>';
-    bodyHtml += '</tr>';
+    if (canEdit) bp.push('<td></td>');
+    bp.push('</tr>');
 
     // Equipment rows
     const equipmentCount = cameras[0].items.length;
     for (let itemIdx = 0; itemIdx < equipmentCount; itemIdx++) {
-        bodyHtml += `<tr><td>${itemIdx + 1}</td><td style="text-align:right">${escapeHtml(cameras[0].items[itemIdx].name)}</td>`;
+        bp.push(`<tr><td>${itemIdx + 1}</td><td style="text-align:right">${escapeHtml(cameras[0].items[itemIdx].name)}</td>`);
         cameras.forEach((cam, tankIdx) => {
             const item = cam.items[itemIdx];
             const isFaulty = item.status === 'תקול';
@@ -59,37 +59,37 @@ function renderCameras() {
             const serial = escapeHtml(item.serial);
 
             if (canEdit) {
-                bodyHtml += `<td class="${cellClass}" onclick="toggleCameraStatus(${tankIdx}, ${itemIdx})">`;
+                bp.push(`<td class="${cellClass}" onclick="toggleCameraStatus(${tankIdx}, ${itemIdx})">`);
             } else {
-                bodyHtml += `<td class="${cellClass}">`;
+                bp.push(`<td class="${cellClass}">`);
             }
-            bodyHtml += `<div class="camera-cell-content">`;
+            bp.push(`<div class="camera-cell-content">`);
             if (serial) {
-                bodyHtml += `<span class="camera-serial">${serial}</span>`;
+                bp.push(`<span class="camera-serial">${serial}</span>`);
             }
-            bodyHtml += `<span class="camera-status-dot ${dotClass}"></span>`;
+            bp.push(`<span class="camera-status-dot ${dotClass}"></span>`);
             if (canEdit) {
-                bodyHtml += `<button class="camera-edit-btn" onclick="event.stopPropagation(); editCameraCell(event, ${tankIdx}, ${itemIdx})" title="ערוך מספר סידורי"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>`;
+                bp.push(`<button class="camera-edit-btn" onclick="event.stopPropagation(); editCameraCell(event, ${tankIdx}, ${itemIdx})" title="ערוך מספר סידורי"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>`);
             }
-            bodyHtml += `</div></td>`;
+            bp.push(`</div></td>`);
         });
         if (canEdit) {
-            bodyHtml += `<td class="camera-actions-cell"><button class="btn-icon delete-row-btn" onclick="deleteCameraRow(${itemIdx})" title="מחק שורה"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td>`;
+            bp.push(`<td class="camera-actions-cell"><button class="btn-icon delete-row-btn" onclick="deleteCameraRow(${itemIdx})" title="מחק שורה"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td>`);
         }
-        bodyHtml += '</tr>';
+        bp.push('</tr>');
     }
 
     // Summary row: count faulty per tank
-    bodyHtml += '<tr class="camera-brigade-row"><td></td><td style="text-align:right;font-weight:600">תקולים</td>';
+    bp.push('<tr class="camera-brigade-row"><td></td><td style="text-align:right;font-weight:600">תקולים</td>');
     cameras.forEach(cam => {
         const faultyCount = cam.items.filter(i => i.status === 'תקול').length;
         const color = faultyCount > 0 ? 'var(--danger)' : 'var(--success)';
-        bodyHtml += `<td style="font-weight:700;color:${color}">${faultyCount}</td>`;
+        bp.push(`<td style="font-weight:700;color:${color}">${faultyCount}</td>`);
     });
-    if (canEdit) bodyHtml += '<td></td>';
-    bodyHtml += '</tr>';
+    if (canEdit) bp.push('<td></td>');
+    bp.push('</tr>');
 
-    tbody.innerHTML = bodyHtml;
+    tbody.innerHTML = bp.join('');
 }
 
 function toggleCameraStatus(tankIdx, itemIdx) {

@@ -131,12 +131,12 @@ function renderPersonnelTable() {
     // Header
     const config = isViewingSnapshot() ? getActiveColumnConfig() : getColumnConfig();
     const thead = document.getElementById('personnelHead');
-    let headerHtml = '<tr>';
+    const h = ['<tr>'];
     if (canEdit) {
         const allChecked = filtered.length > 0 && filtered.every(p => _bulkSelected.has(p.id));
-        headerHtml += `<th style="width:36px"><input type="checkbox" id="bulkSelectAll" ${allChecked ? 'checked' : ''} onchange="toggleBulkSelectAll()"></th>`;
+        h.push(`<th style="width:36px"><input type="checkbox" id="bulkSelectAll" ${allChecked ? 'checked' : ''} onchange="toggleBulkSelectAll()"></th>`);
     }
-    headerHtml += '<th style="width:40px">#</th>';
+    h.push('<th style="width:40px">#</th>');
     columns.forEach(col => {
         const sortClass = state.sortColumn === col.key
             ? (state.sortDirection === 'asc' ? 'sorted-asc' : 'sorted-desc')
@@ -147,13 +147,13 @@ function renderPersonnelTable() {
         const deleteBtn = isDeletable
             ? `<span class="col-delete-btn" onclick="event.stopPropagation(); deleteColumn('${col.key}')" title="מחק עמודה">&times;</span>`
             : '';
-        headerHtml += `<th class="${sortClass}" onclick="sortBy('${col.key}')">${col.label}${deleteBtn}</th>`;
+        h.push(`<th class="${sortClass}" onclick="sortBy('${col.key}')">${col.label}${deleteBtn}</th>`);
     });
     if (canEdit) {
-        headerHtml += '<th style="width:80px">פעולות</th>';
+        h.push('<th style="width:80px">פעולות</th>');
     }
-    headerHtml += '</tr>';
-    thead.innerHTML = headerHtml;
+    h.push('</tr>');
+    thead.innerHTML = h.join('');
 
     // Body
     const tbody = document.getElementById('personnelBody');
@@ -161,34 +161,34 @@ function renderPersonnelTable() {
     if (filtered.length === 0) {
         tbody.innerHTML = `<tr><td colspan="${colSpan}" style="text-align:center;padding:40px;color:var(--text-muted)">לא נמצאו תוצאות</td></tr>`;
     } else {
-        let bodyHtml = '';
+        const b = [];
         filtered.forEach((person, idx) => {
             const globalIdx = activePersonnel.indexOf(person);
             const isSelected = _bulkSelected.has(person.id);
-            bodyHtml += `<tr class="${isSelected ? 'bulk-selected' : ''}">`;
+            b.push(`<tr class="${isSelected ? 'bulk-selected' : ''}">`);
             if (canEdit) {
-                bodyHtml += `<td><input type="checkbox" class="bulk-checkbox" data-id="${person.id}" ${isSelected ? 'checked' : ''} onchange="toggleBulkSelect('${person.id}')"></td>`;
+                b.push(`<td><input type="checkbox" class="bulk-checkbox" data-id="${person.id}" ${isSelected ? 'checked' : ''} onchange="toggleBulkSelect('${person.id}')"></td>`);
             }
-            bodyHtml += `<td style="color:var(--text-muted)">${idx + 1}</td>`;
+            b.push(`<td style="color:var(--text-muted)">${idx + 1}</td>`);
             columns.forEach(col => {
                 const val = person[col.key] || '';
                 if (canEdit) {
-                    bodyHtml += `<td class="editable" ondblclick="startCellEdit(this, ${globalIdx}, '${col.key}')">${escapeHtml(val)}</td>`;
+                    b.push(`<td class="editable" ondblclick="startCellEdit(this, ${globalIdx}, '${col.key}')">${escapeHtml(val)}</td>`);
                 } else {
-                    bodyHtml += `<td>${escapeHtml(val)}</td>`;
+                    b.push(`<td>${escapeHtml(val)}</td>`);
                 }
             });
             if (canEdit) {
-                bodyHtml += `<td>
+                b.push(`<td>
                     <div class="row-actions">
                         <button title="ערוך" onclick="openEditPersonModal(${globalIdx})">✏️</button>
                         <button class="delete" title="מחק" onclick="deletePerson(${globalIdx})">🗑️</button>
                     </div>
-                </td>`;
+                </td>`);
             }
-            bodyHtml += '</tr>';
+            b.push('</tr>');
         });
-        tbody.innerHTML = bodyHtml;
+        tbody.innerHTML = b.join('');
     }
 
     // Update bulk UI bar

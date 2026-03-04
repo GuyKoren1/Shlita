@@ -7,16 +7,16 @@ function _populateDashboardFilters() {
     if (!container) return;
     const config = getColumnConfig();
     const filterColumns = config.filter(c => c.isFilter);
-    let html = '<div class="filter-group"><input type="text" id="dashSearchInput" placeholder="חיפוש חופשי..." oninput="updateDashboard()"></div>';
+    const f = ['<div class="filter-group"><input type="text" id="dashSearchInput" placeholder="חיפוש חופשי..." oninput="updateDashboard()"></div>'];
     filterColumns.forEach(col => {
         const values = [...new Set(state.personnel.map(p => p[col.key]).filter(Boolean))].sort();
-        html += `<div class="filter-group"><select id="dashFilter_${col.key}" onchange="updateDashboard()">`;
-        html += `<option value="">כל ${col.label}</option>`;
-        values.forEach(v => { html += `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`; });
-        html += '</select></div>';
+        f.push(`<div class="filter-group"><select id="dashFilter_${col.key}" onchange="updateDashboard()">`);
+        f.push(`<option value="">כל ${col.label}</option>`);
+        values.forEach(v => { f.push(`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`); });
+        f.push('</select></div>');
     });
-    html += '<button class="btn btn-ghost" onclick="clearDashboardFilters()">נקה סינון</button>';
-    container.innerHTML = html;
+    f.push('<button class="btn btn-ghost" onclick="clearDashboardFilters()">נקה סינון</button>');
+    container.innerHTML = f.join('');
 }
 
 function _getDashboardFilteredPersonnel() {
@@ -114,7 +114,7 @@ function updateDashboard() {
     if (state.activities.length === 0) {
         recentContainer.innerHTML = '<p style="color:var(--text-muted);padding:12px">אין פעילויות</p>';
     } else {
-        let html = '';
+        const rp = [];
         [...state.activities].reverse().slice(0, 5).forEach(act => {
             const pTotal = act.participants.length;
             const pDone = act.participants.filter(p => p.completed).length;
@@ -123,15 +123,15 @@ function updateDashboard() {
             const total = pTotal + vTotal;
             const completed = pDone + vDone;
             const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
-            html += `<div class="activity-mini">
+            rp.push(`<div class="activity-mini">
                 <span class="activity-mini-name">${escapeHtml(act.name)}</span>
                 <div class="activity-mini-progress">
                     <div class="mini-bar"><div class="mini-fill" style="width:${percent}%"></div></div>
                     <span>${completed}/${total} (${percent}%)</span>
                 </div>
-            </div>`;
+            </div>`);
         });
-        recentContainer.innerHTML = html;
+        recentContainer.innerHTML = rp.join('');
     }
 
     // Group breakdown
@@ -143,15 +143,12 @@ function updateDashboard() {
             groupCounts[val] = (groupCounts[val] || 0) + 1;
         }
     });
-    let teamHtml = '';
     const sortedGroups = Object.entries(groupCounts).sort((a, b) => b[1] - a[1]);
-    sortedGroups.forEach(([group, count]) => {
-        teamHtml += `<div class="team-card">
+    const tp = sortedGroups.map(([group, count]) => `<div class="team-card">
             <div class="team-name">${escapeHtml(group)}</div>
             <div class="team-count">${count} אנשים</div>
-        </div>`;
-    });
-    teamContainer.innerHTML = teamHtml || '<p style="color:var(--text-muted)">אין נתונים</p>';
+        </div>`);
+    teamContainer.innerHTML = tp.length ? tp.join('') : '<p style="color:var(--text-muted)">אין נתונים</p>';
 
     // --- Chart.js Charts ---
     renderGroupChart(sortedGroups, groupCol.label);

@@ -92,7 +92,7 @@ function renderActivityParticipants() {
     const filtered = getActivityFilteredPersonnel();
     const container = document.getElementById('participantsList');
 
-    let html = '';
+    const parts = [];
     const config = getColumnConfig();
     const primaryCol = config.find(c => c.isPrimary) || config[0];
     const metaCols = config.filter(c => !c.isPrimary).slice(0, 3);
@@ -101,16 +101,16 @@ function renderActivityParticipants() {
         const checked = selectedParticipants.has(person.id) ? 'checked' : '';
         const selectedClass = selectedParticipants.has(person.id) ? 'selected' : '';
         const metaText = metaCols.map(c => person[c.key] || '').filter(Boolean).join(' | ');
-        html += `<div class="participant-item ${selectedClass}" onclick="toggleParticipant('${person.id}', this)">
+        parts.push(`<div class="participant-item ${selectedClass}" onclick="toggleParticipant('${person.id}', this)">
             <input type="checkbox" ${checked} onclick="event.stopPropagation(); toggleParticipant('${person.id}', this.parentElement)">
             <div class="participant-info">
                 <span class="name">${escapeHtml(person[primaryCol.key] || '')}</span>
                 <span class="meta">${escapeHtml(metaText)}</span>
             </div>
-        </div>`;
+        </div>`);
     });
 
-    container.innerHTML = html || '<div style="padding:20px;text-align:center;color:var(--text-muted)">לא נמצאו תוצאות</div>';
+    container.innerHTML = parts.length ? parts.join('') : '<div style="padding:20px;text-align:center;color:var(--text-muted)">לא נמצאו תוצאות</div>';
     updateSelectedCount();
 }
 
@@ -125,22 +125,22 @@ function renderActivityVehicles() {
         return;
     }
 
-    let html = '';
+    const parts = [];
     vehicles.forEach(v => {
         const checked = selectedVehicles.has(v.id) ? 'checked' : '';
         const selectedClass = selectedVehicles.has(v.id) ? 'selected' : '';
         const openFaults = v.faults.filter(f => !f.resolved).length;
         const meta = openFaults > 0 ? `${openFaults} תקלות פתוחות` : 'תקין';
-        html += `<div class="participant-item ${selectedClass}" onclick="toggleVehicleParticipant('${v.id}')">
+        parts.push(`<div class="participant-item ${selectedClass}" onclick="toggleVehicleParticipant('${v.id}')">
             <input type="checkbox" ${checked} onclick="event.stopPropagation(); toggleVehicleParticipant('${v.id}')">
             <div class="participant-info">
                 <span class="name">${escapeHtml(v.name)}</span>
                 <span class="meta">${escapeHtml(meta)}</span>
             </div>
-        </div>`;
+        </div>`);
     });
 
-    container.innerHTML = html;
+    container.innerHTML = parts.join('');
     updateSelectedCount();
 }
 
@@ -278,7 +278,7 @@ function renderActivities() {
         return;
     }
 
-    let html = '';
+    const cards = [];
     [...state.activities].reverse().forEach(activity => {
         const { total, completed, percent, pCount, vCount } = _getActivityTotals(activity);
         const isOverdue = activity.deadline && percent < 100 && new Date(activity.deadline) < new Date();
@@ -291,7 +291,7 @@ function renderActivities() {
         if (vCount > 0) metaParts.push(`🚗 ${vCount} כלים`);
         metaParts.push(`✅ ${completed} השלימו`);
 
-        html += `<div class="${cardClass}" onclick="openActivityDetail('${activity.id}')">
+        cards.push(`<div class="${cardClass}" onclick="openActivityDetail('${activity.id}')">
             <div class="activity-card-header">
                 <h3>${escapeHtml(activity.name)}</h3>
                 <span class="activity-status ${statusClass}">${statusText}</span>
@@ -305,10 +305,10 @@ function renderActivities() {
             <div class="progress-bar">
                 <div class="progress-fill" style="width: ${percent}%"></div>
             </div>
-        </div>`;
+        </div>`);
     });
 
-    container.innerHTML = html;
+    container.innerHTML = cards.join('');
 }
 
 // ==================== Activity Detail ====================

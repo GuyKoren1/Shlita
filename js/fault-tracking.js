@@ -35,7 +35,7 @@ function renderFaultTracking() {
     const categoryFilter = categoryEl ? categoryEl.value : '';
     const sortBy = sortEl ? sortEl.value : '';
 
-    let html = `<div class="fault-stats-bar">
+    const parts = [`<div class="fault-stats-bar">
         <div class="fault-stat">
             <span class="fault-stat-value">${records.length}</span>
             <span class="fault-stat-label">כלים</span>
@@ -52,7 +52,7 @@ function renderFaultTracking() {
             <span class="fault-stat-value fault-stat-resolved">${totalResolved}</span>
             <span class="fault-stat-label">טופלו</span>
         </div>
-    </div>`;
+    </div>`];
     records.forEach(vehicle => {
         // Apply filters
         let filteredFaults = vehicle.faults;
@@ -95,7 +95,7 @@ function renderFaultTracking() {
             });
         }
 
-        html += `<div class="vehicle-card">
+        parts.push(`<div class="vehicle-card">
             <div class="vehicle-card-header">
                 <h3>${escapeHtml(vehicle.name)}</h3>
                 <div class="vehicle-card-badges">
@@ -107,12 +107,12 @@ function renderFaultTracking() {
                     <button class="btn btn-sm btn-secondary" onclick="openAddFaultModal('${vehicle.id}')">+ תקלה</button>
                     <button class="btn btn-sm btn-danger" onclick="deleteVehicle('${vehicle.id}')">מחק כלי</button>
                 </div>` : ''}
-            </div>`;
+            </div>`);
 
         if (sortedFaults.length === 0) {
-            html += `<div class="fault-empty">אין תקלות רשומות</div>`;
+            parts.push(`<div class="fault-empty">אין תקלות רשומות</div>`);
         } else {
-            html += `<table class="fault-table">
+            parts.push(`<table class="fault-table">
                 <thead><tr>
                     <th>תקלה</th>
                     <th>תחום</th>
@@ -120,7 +120,7 @@ function renderFaultTracking() {
                     <th>ימים פתוחים</th>
                     <th>סטטוס</th>
                     ${isAdmin && !isSnapshot ? '<th>פעולות</th>' : ''}
-                </tr></thead><tbody>`;
+                </tr></thead><tbody>`);
 
             sortedFaults.forEach(fault => {
                 const days = getDaysOpen(fault.reportDate, fault.closedDate);
@@ -129,7 +129,7 @@ function renderFaultTracking() {
                 const daysBadgeClass = fault.resolved ? 'days-resolved' : days >= 14 ? 'days-red' : days >= 7 ? 'days-yellow' : 'days-green';
                 const criticalIcon = fault.critical ? '<span class="critical-icon" title="קריטי">&#9888;</span> ' : '';
 
-                html += `<tr class="${resolvedClass} ${criticalClass}" onclick="openFaultDetail('${vehicle.id}', '${fault.id}')" style="cursor:pointer">
+                parts.push(`<tr class="${resolvedClass} ${criticalClass}" onclick="openFaultDetail('${vehicle.id}', '${fault.id}')" style="cursor:pointer">
                     <td class="fault-title-cell">${criticalIcon}${escapeHtml(fault.title)}</td>
                     <td>${fault.category ? escapeHtml(fault.category) : '-'}</td>
                     <td>${formatDateHe(fault.reportDate)}</td>
@@ -143,15 +143,15 @@ function renderFaultTracking() {
                         <button title="${fault.resolved ? 'פתח מחדש' : 'סמן טופלה'}" onclick="toggleFaultResolved('${vehicle.id}', '${fault.id}')">${fault.resolved ? '&#8634;' : '&#10003;'}</button>
                         <button title="מחק תקלה" onclick="deleteFault('${vehicle.id}', '${fault.id}')">&#128465;</button>
                     </td>` : ''}
-                </tr>`;
+                </tr>`);
             });
 
-            html += `</tbody></table>`;
+            parts.push(`</tbody></table>`);
         }
-        html += `</div>`;
+        parts.push(`</div>`);
     });
 
-    container.innerHTML = html;
+    container.innerHTML = parts.join('');
 }
 
 function formatDateHe(isoStr) {

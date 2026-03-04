@@ -8,6 +8,7 @@ function initTheme() {
 }
 
 function toggleTheme() {
+    document.documentElement.setAttribute('data-theme-switching', 'true');
     const current = document.documentElement.getAttribute('data-theme');
     if (current === 'light') {
         document.documentElement.removeAttribute('data-theme');
@@ -17,6 +18,11 @@ function toggleTheme() {
         localStorage.setItem('shlita_theme', 'light');
     }
     updateThemeIcon();
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            document.documentElement.removeAttribute('data-theme-switching');
+        });
+    });
 }
 
 function updateThemeIcon() {
