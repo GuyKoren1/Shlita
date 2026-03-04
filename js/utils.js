@@ -20,6 +20,13 @@ function formatDate(dateStr) {
     }
 }
 
+// Plain date string for PDF export — no locale marks, safe for _reverseHebrew
+function pdfDate(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    return d.getDate() + '.' + (d.getMonth() + 1) + '.' + d.getFullYear();
+}
+
 function openModal(id) {
     document.getElementById(id).classList.remove('hidden');
 }
