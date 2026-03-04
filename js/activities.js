@@ -505,26 +505,33 @@ async function exportActivitiesPDF() {
             const { total, completed, percent, pCount, vCount } = _getActivityTotals(act);
             const statusText = percent === 100 ? 'הושלמה' : 'בתהליך';
 
-            // Activity header — _reverseHebrew handles mixed Hebrew+numbers (% added to regex)
-            doc.setFontSize(14);
-            doc.setTextColor(79, 140, 255);
-            doc.text(_reverseHebrew(`${act.name} — ${statusText} (${percent}%)`), pageW / 2, currentY, { align: 'center' });
-            doc.setTextColor(0, 0, 0);
+            // Activity info as autoTable (avoids doc.text BiDi issues with mixed Hebrew+numbers)
+            const infoHead = [[
+                _reverseHebrew('תאריך יעד'),
+                _reverseHebrew('התקדמות'),
+                _reverseHebrew('סטטוס'),
+                _reverseHebrew('תיאור'),
+                _reverseHebrew('פעילות')
+            ]];
+            const infoRow = [[
+                act.deadline ? pdfDate(act.deadline) : '-',
+                percent + '%',
+                _reverseHebrew(statusText),
+                _reverseHebrew(act.description || '-'),
+                _reverseHebrew(act.name)
+            ]];
 
-            if (act.description) {
-                doc.setFontSize(10);
-                doc.text(_reverseHebrew(act.description), pageW / 2, currentY + 6, { align: 'center' });
-                currentY += 6;
-            }
-            if (act.deadline) {
-                doc.setFontSize(10);
-                doc.text(_reverseHebrew('תאריך יעד: ' + pdfDate(act.deadline)), pageW / 2, currentY + 6, { align: 'center' });
-                currentY += 6;
-            }
+            doc.autoTable({
+                head: infoHead,
+                body: infoRow,
+                startY: currentY,
+                styles: { halign: 'center', fontSize: 11, font: 'Rubik' },
+                headStyles: { fillColor: [79, 140, 255], font: 'Rubik' }
+            });
 
-            currentY += 8;
+            currentY = doc.lastAutoTable.finalY + 5;
 
-            // Build rows
+            // Participants table
             const rows = [];
             act.participants.forEach(p => {
                 const person = state.personnel.find(per => per.id === p.personId);
@@ -557,7 +564,7 @@ async function exportActivitiesPDF() {
                 body: rows,
                 startY: currentY,
                 styles: { halign: 'center', fontSize: 10, font: 'Rubik' },
-                headStyles: { fillColor: [79, 140, 255], font: 'Rubik' }
+                headStyles: { fillColor: [100, 116, 139], font: 'Rubik' }
             });
 
             currentY = doc.lastAutoTable.finalY + 15;
