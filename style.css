@@ -94,6 +94,7 @@ body {
     color: var(--text-primary);
     direction: rtl;
     min-height: 100vh;
+    min-height: 100dvh;
     overflow: hidden;
 }
 
@@ -105,6 +106,7 @@ body {
     align-items: center;
     justify-content: center;
     min-height: 100vh;
+    min-height: 100dvh;
     background: linear-gradient(135deg, #0f1117 0%, #1a1d27 50%, #0f1117 100%);
     position: relative;
 }
@@ -138,7 +140,7 @@ body {
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow);
-    width: 380px;
+    width: min(380px, calc(100vw - 32px));
 }
 
 .login-logo {
@@ -211,6 +213,7 @@ body {
 .main-app {
     display: flex;
     height: 100vh;
+    height: 100dvh;
 }
 
 /* ==================== Sidebar ==================== */
@@ -1720,14 +1723,16 @@ h4 {
 .hamburger-btn {
     display: none;
     position: fixed;
-    top: 12px;
-    right: 12px;
+    top: max(12px, env(safe-area-inset-top));
+    right: max(12px, env(safe-area-inset-right));
     z-index: 1100;
     background: var(--bg-secondary);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     color: var(--text-primary);
-    padding: 8px;
+    padding: 10px;
+    min-width: 44px;
+    min-height: 44px;
     cursor: pointer;
     transition: background-color var(--transition), color var(--transition), border-color var(--transition), opacity var(--transition), transform var(--transition), box-shadow var(--transition);
 }
@@ -2686,9 +2691,9 @@ tr.r1-excluded .r1-cell {
         font-size: 12px;
     }
 
-    .fault-table {
-        display: block;
+    .fault-table-wrap {
         overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
     /* --- Modals --- */
@@ -2852,6 +2857,129 @@ tr.r1-excluded .r1-cell {
     .feedback-fab-option {
         font-size: 12px;
         padding: 8px 14px;
+    }
+
+    /* --- iOS input zoom fix (font-size >= 16px prevents auto-zoom) --- */
+    .form-group input,
+    .form-group select,
+    .form-group textarea,
+    .filter-group input,
+    .filter-group select,
+    .detail-filters input,
+    .detail-filters select,
+    .report1-date-row input[type="date"],
+    .report1-filters input[type="number"] {
+        font-size: 16px;
+    }
+
+    /* --- Safe area insets --- */
+    .feedback-fab {
+        bottom: max(16px, env(safe-area-inset-bottom));
+        left: max(16px, env(safe-area-inset-left));
+    }
+
+    .toast {
+        bottom: max(24px, env(safe-area-inset-bottom));
+    }
+
+    .content {
+        padding-left: max(12px, env(safe-area-inset-left));
+        padding-right: max(12px, env(safe-area-inset-right));
+    }
+
+    /* --- Touch targets (min 44px) --- */
+    .row-actions button {
+        padding: 8px;
+        min-width: 44px;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .col-delete-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+    }
+
+    .save-retry-btn {
+        font-size: 12px;
+        padding: 6px 12px;
+        min-height: 36px;
+    }
+
+    /* --- dvh for sidebar & table containers --- */
+    .sidebar {
+        height: 100vh;
+        height: 100dvh;
+    }
+
+    .table-container {
+        max-height: calc(100vh - 280px);
+        max-height: calc(100dvh - 280px);
+    }
+
+    .modal {
+        max-height: 90vh;
+        max-height: 90dvh;
+    }
+
+    /* --- Fault table: use overflow-x without display:block to keep sticky header --- */
+    .fault-table {
+        display: table;
+        min-width: 500px;
+    }
+
+    /* --- Report1 date column legibility --- */
+    .r1-date-col {
+        font-size: 11px;
+    }
+
+    /* --- Inline edit touch support (tap indicator) --- */
+    .editable,
+    .camera-info-cell {
+        cursor: pointer;
+        -webkit-tap-highlight-color: rgba(var(--accent-rgb, 59, 130, 246), 0.15);
+    }
+
+    .editable::after,
+    .camera-info-cell::after {
+        content: '✎';
+        font-size: 10px;
+        opacity: 0.4;
+        margin-right: 4px;
+    }
+
+    /* --- Login card mobile padding --- */
+    .login-card {
+        padding: 32px 24px;
+    }
+}
+
+/* ==================== Intermediate breakpoint (large phones / small tablets) ==================== */
+@media (min-width: 421px) and (max-width: 600px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    }
+
+    .view-actions .btn {
+        font-size: 12px;
+        padding: 7px 10px;
+    }
+
+    .activity-card-meta {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .fault-stats-bar {
+        flex-wrap: wrap;
+    }
+
+    .fault-stat {
+        flex: 1 1 calc(50% - 4px);
+        min-width: 0;
     }
 }
 

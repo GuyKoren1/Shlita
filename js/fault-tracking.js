@@ -112,7 +112,7 @@ function renderFaultTracking() {
         if (sortedFaults.length === 0) {
             parts.push(`<div class="fault-empty">אין תקלות רשומות</div>`);
         } else {
-            parts.push(`<table class="fault-table">
+            parts.push(`<div class="fault-table-wrap"><table class="fault-table">
                 <thead><tr>
                     <th>תקלה</th>
                     <th>תחום</th>
@@ -146,7 +146,7 @@ function renderFaultTracking() {
                 </tr>`);
             });
 
-            parts.push(`</tbody></table>`);
+            parts.push(`</tbody></table></div>`);
         }
         parts.push(`</div>`);
     });
