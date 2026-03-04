@@ -491,10 +491,9 @@ async function exportActivitiesPDF() {
         doc.setFont('Rubik');
         const pageW = doc.internal.pageSize.getWidth();
 
-        // Title — doc.text() uses natural Hebrew (PDF viewer handles BiDi/RTL)
-        // Only autoTable cells need _reverseHebrew
+        // Title — all doc.text() must use _reverseHebrew (jsPDF has no BiDi)
         doc.setFontSize(18);
-        doc.text('דוח פעילויות', pageW / 2, 15, { align: 'center' });
+        doc.text(_reverseHebrew('דוח פעילויות'), pageW / 2, 15, { align: 'center' });
         const d = new Date();
         const dateStr = d.getDate() + '.' + (d.getMonth() + 1) + '.' + d.getFullYear();
         doc.setFontSize(12);
@@ -506,20 +505,20 @@ async function exportActivitiesPDF() {
             const { total, completed, percent, pCount, vCount } = _getActivityTotals(act);
             const statusText = percent === 100 ? 'הושלמה' : 'בתהליך';
 
-            // Activity header — natural Hebrew, BiDi handles RTL + numbers
+            // Activity header — _reverseHebrew handles mixed Hebrew+numbers (% added to regex)
             doc.setFontSize(14);
             doc.setTextColor(79, 140, 255);
-            doc.text(`${act.name} — ${statusText} (${percent}%)`, pageW / 2, currentY, { align: 'center' });
+            doc.text(_reverseHebrew(`${act.name} — ${statusText} (${percent}%)`), pageW / 2, currentY, { align: 'center' });
             doc.setTextColor(0, 0, 0);
 
             if (act.description) {
                 doc.setFontSize(10);
-                doc.text(act.description, pageW / 2, currentY + 6, { align: 'center' });
+                doc.text(_reverseHebrew(act.description), pageW / 2, currentY + 6, { align: 'center' });
                 currentY += 6;
             }
             if (act.deadline) {
                 doc.setFontSize(10);
-                doc.text('תאריך יעד: ' + pdfDate(act.deadline), pageW / 2, currentY + 6, { align: 'center' });
+                doc.text(_reverseHebrew('תאריך יעד: ' + pdfDate(act.deadline)), pageW / 2, currentY + 6, { align: 'center' });
                 currentY += 6;
             }
 

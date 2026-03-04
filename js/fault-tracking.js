@@ -401,7 +401,7 @@ function _reverseHebrew(text) {
     const reversed = text.split('').reverse().join('');
     // Re-reverse number/Latin runs to keep them LTR, and swap parentheses
     return reversed
-        .replace(/[0-9A-Za-z./\-:,]+/g, m => m.split('').reverse().join(''))
+        .replace(/[0-9A-Za-z./\-:,%]+/g, m => m.split('').reverse().join(''))
         .replace(/[()]/g, m => m === '(' ? ')' : '(');
 }
 
