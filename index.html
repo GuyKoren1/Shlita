@@ -880,6 +880,10 @@
                     <textarea id="shootingParseText" rows="10" placeholder="מפק&quot;צ: &#10;תותחן: &#10;כלי: &#10;תאריך: &#10;מסגרת: &#10;מיקום כלי: &#10;מיקום מטרה: &#10;סוג מטרה: &#10;תיאור מטרה כללי: &#10;סוג פגז: &#10;כמות: &#10;טווח:" oninput="previewParsedShooting()"></textarea>
                 </div>
                 <div id="shootingParsePreview"></div>
+                <div style="display:flex;gap:8px;margin-top:16px">
+                    <button class="btn btn-primary" style="flex:1" onclick="importParsedShooting()">ייבוא</button>
+                    <button class="btn btn-ghost" onclick="closeModal('shootingParseModal')">ביטול</button>
+                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-ghost" onclick="closeModal('shootingParseModal')">ביטול</button>
