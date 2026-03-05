@@ -296,13 +296,10 @@ function previewParsedShooting() {
 }
 
 function importParsedShooting() {
-    try {
-    alert('importParsedShooting called');
     const text = document.getElementById('shootingParseText').value.trim();
     if (!text) { showToast('אין טקסט לפענוח'); return; }
 
     const records = _parseShootingMessages(text);
-    alert('records: ' + records.length);
     if (records.length === 0) { showToast('לא זוהו רשומות בהודעה'); return; }
 
     records.forEach(r => {
@@ -327,7 +324,6 @@ function importParsedShooting() {
     closeModal('shootingParseModal');
     renderShooting();
     showToast(`${records.length} רשומות ירי נוספו`);
-    } catch(e) { alert('ERROR: ' + e.message); }
 }
 
 function _stripQuotes(text) {
