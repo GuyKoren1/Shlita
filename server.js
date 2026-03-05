@@ -134,8 +134,54 @@ app.get('/api/session', (req, res) => {
     res.json({ accessLevel: req.session.accessLevel || null });
 });
 
+// --- Backups ---
+const MAX_BACKUPS = 10;
+
+function getBackupCollection() {
+    return db.collection('backups');
+}
+
+async function createBackup(reason) {
+    try {
+        const timestamp = new Date().toISOString();
+        if (db) {
+            const col = getCollection();
+            const doc = await col.findOne({ _id: 'app_state' });
+            if (!doc) return;
+            const { _id, ...data } = doc;
+            const backupCol = getBackupCollection();
+            await backupCol.insertOne({ timestamp, reason, data });
+            // Keep only last MAX_BACKUPS
+            const count = await backupCol.countDocuments();
+            if (count > MAX_BACKUPS) {
+                const oldest = await backupCol.find().sort({ timestamp: 1 }).limit(count - MAX_BACKUPS).toArray();
+                const ids = oldest.map(b => b._id);
+                await backupCol.deleteMany({ _id: { $in: ids } });
+            }
+            console.log(`Backup created: ${reason} (${timestamp})`);
+        } else {
+            const BACKUP_DIR = path.join(__dirname, 'backups');
+            if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR);
+            if (fs.existsSync(DATA_FILE)) {
+                const raw = fs.readFileSync(DATA_FILE, 'utf8');
+                const fname = `backup_${timestamp.replace(/[:.]/g, '-')}_${reason}.json`;
+                fs.writeFileSync(path.join(BACKUP_DIR, fname), raw, 'utf8');
+                // Keep only last MAX_BACKUPS files
+                const files = fs.readdirSync(BACKUP_DIR).sort();
+                while (files.length > MAX_BACKUPS) {
+                    fs.unlinkSync(path.join(BACKUP_DIR, files.shift()));
+                }
+            }
+            console.log(`Backup created: ${reason} (${timestamp})`);
+        }
+    } catch (err) {
+        console.error('Backup failed:', err);
+    }
+}
+
 // --- Data version (incremented on every save, used for sync polling) ---
 let _dataVersion = 0;
+let _savesSinceBackup = 0;
 
 // GET /api/data/version - lightweight endpoint for polling
 app.get('/api/data/version', requireAuth, (req, res) => {
@@ -192,6 +238,12 @@ app.post('/api/data', requireAuth, requireAdmin, async (req, res) => {
             fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
         }
         _dataVersion++;
+        _savesSinceBackup++;
+        // Auto-backup every 50 saves
+        if (_savesSinceBackup >= 50) {
+            _savesSinceBackup = 0;
+            createBackup('auto');
+        }
         res.json({ ok: true, version: _dataVersion });
     } catch (err) {
         console.error('Error saving data:', err);
@@ -202,6 +254,8 @@ app.post('/api/data', requireAuth, requireAdmin, async (req, res) => {
 // POST /api/reset
 app.post('/api/reset', requireAuth, requireAdmin, async (req, res) => {
     try {
+        // Always backup before reset
+        await createBackup('before-reset');
         if (db) {
             const col = getCollection();
             await col.deleteOne({ _id: 'app_state' });
@@ -220,6 +274,57 @@ app.post('/api/reset', requireAuth, requireAdmin, async (req, res) => {
     } catch (err) {
         console.error('Error resetting data:', err);
         res.status(500).json({ error: 'Failed to reset data' });
+    }
+});
+
+// GET /api/backups - list available backups (admin only)
+app.get('/api/backups', requireAuth, requireAdmin, async (req, res) => {
+    try {
+        if (db) {
+            const backups = await getBackupCollection()
+                .find({}, { projection: { data: 0 } })
+                .sort({ timestamp: -1 })
+                .toArray();
+            res.json(backups.map(b => ({ id: b._id, timestamp: b.timestamp, reason: b.reason })));
+        } else {
+            const BACKUP_DIR = path.join(__dirname, 'backups');
+            if (!fs.existsSync(BACKUP_DIR)) return res.json([]);
+            const files = fs.readdirSync(BACKUP_DIR).sort().reverse();
+            res.json(files.map(f => ({ id: f, timestamp: f.replace('backup_', '').split('_')[0], reason: f.split('_').pop().replace('.json', '') })));
+        }
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to list backups' });
+    }
+});
+
+// POST /api/backups/:id/restore - restore from a backup (admin only)
+app.post('/api/backups/:id/restore', requireAuth, requireAdmin, async (req, res) => {
+    try {
+        // Backup current state before restoring
+        await createBackup('before-restore');
+        if (db) {
+            const backupCol = getBackupCollection();
+            const { ObjectId } = require('mongodb');
+            let objectId;
+            try { objectId = new ObjectId(req.params.id); } catch { return res.status(400).json({ error: 'Invalid backup ID' }); }
+            const backup = await backupCol.findOne({ _id: objectId });
+            if (!backup) return res.status(404).json({ error: 'Backup not found' });
+            const col = getCollection();
+            await col.replaceOne({ _id: 'app_state' }, { _id: 'app_state', ...backup.data }, { upsert: true });
+            _dataVersion++;
+            res.json({ ok: true, version: _dataVersion });
+        } else {
+            const BACKUP_DIR = path.join(__dirname, 'backups');
+            const filePath = path.join(BACKUP_DIR, req.params.id);
+            if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'Backup not found' });
+            const raw = fs.readFileSync(filePath, 'utf8');
+            fs.writeFileSync(DATA_FILE, raw, 'utf8');
+            _dataVersion++;
+            res.json({ ok: true, version: _dataVersion });
+        }
+    } catch (err) {
+        console.error('Error restoring backup:', err);
+        res.status(500).json({ error: 'Failed to restore backup' });
     }
 });
 
