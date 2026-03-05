@@ -326,8 +326,16 @@ function importParsedShooting() {
     showToast(`${records.length} רשומות ירי נוספו`);
 }
 
+function _normalizeQuotes(text) {
+    // Normalize all quote variants to ASCII double quote
+    return text.replace(/[״""״׳''`]/g, '"');
+}
+
 function _parseShootingMessages(text) {
-    // Split on lines that start with "מפק"צ:" to support multiple records pasted together
+    // Normalize quotes so מפק״צ / מפק"צ / מפק"צ all become מפק"צ
+    text = _normalizeQuotes(text);
+
+    // Split on lines that start with מפק"צ: to support multiple records pasted together
     const blocks = text.split(/(?=מפק"צ\s*:)/);
     const results = [];
 
