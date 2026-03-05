@@ -326,29 +326,28 @@ function importParsedShooting() {
     showToast(`${records.length} רשומות ירי נוספו`);
 }
 
-function _normalizeQuotes(text) {
-    // Normalize all quote variants to ASCII double quote
-    return text.replace(/[״""״׳''`]/g, '"');
+function _stripQuotes(text) {
+    // Remove ALL quote-like characters for key comparison
+    return text.replace(/["״""׳''`\u05F4\u0022\u201C\u201D\u2018\u2019]/g, '');
 }
 
 function _parseShootingMessages(text) {
-    // Normalize quotes so מפק״צ / מפק"צ / מפק"צ all become מפק"צ
-    text = _normalizeQuotes(text);
-
-    // Split on lines that start with מפק"צ: to support multiple records pasted together
-    const blocks = text.split(/(?=מפק"צ\s*:)/);
+    // Split on lines that start with מפק"צ/מפק״צ/מפקצ followed by colon
+    const blocks = text.split(/(?=מפק[""״׳\u05F4]?צ\s*:)/);
     const results = [];
 
     blocks.forEach(block => {
         block = block.trim();
         if (!block) return;
 
+        // Parse key:value pairs, stripping quotes from keys for matching
         const fieldMap = {};
-        const lines = block.split('\n');
+        const lines = block.split(/\r?\n/);
         lines.forEach(line => {
             const match = line.match(/^([^:]+):\s*(.*)/);
             if (match) {
-                const key = match[1].trim();
+                const rawKey = match[1].trim();
+                const key = _stripQuotes(rawKey);
                 const val = match[2].trim();
                 fieldMap[key] = val;
             }
@@ -358,7 +357,7 @@ function _parseShootingMessages(text) {
         if (Object.keys(fieldMap).length === 0) return;
 
         const record = {
-            commander: fieldMap['מפק"צ'] || fieldMap['מפקצ'] || '',
+            commander: fieldMap['מפקצ'] || '',
             gunner: fieldMap['תותחן'] || '',
             vehicle: fieldMap['כלי'] || '',
             dateRaw: fieldMap['תאריך'] || '',
