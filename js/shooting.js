@@ -270,17 +270,9 @@ function previewParsedShooting() {
         return;
     }
 
-    // DEBUG: show raw char codes of first 30 chars
-    const debugChars = text.substring(0, 60).split('').map(c => c + '(' + c.charCodeAt(0).toString(16) + ')').join(' ');
-    const lines = text.split(/\r?\n/);
-    const debugLines = lines.map((l, i) => `<div>שורה ${i}: <code>${l.replace(/</g,'&lt;')}</code></div>`).join('');
-
     const records = _parseShootingMessages(text);
     if (records.length === 0) {
-        document.getElementById('shootingParsePreview').innerHTML = `<p style="color:var(--danger)">לא זוהו רשומות בהודעה</p>
-            <details open><summary>DEBUG</summary>
-            <div style="font-size:11px;direction:ltr;text-align:left;background:var(--card-bg);padding:8px;border-radius:4px;overflow:auto;max-height:300px">
-            <div><b>Chars:</b> ${debugChars}</div><hr>${debugLines}</div></details>`;
+        document.getElementById('shootingParsePreview').innerHTML = '<p style="color:var(--danger)">לא זוהו רשומות בהודעה</p>';
         return;
     }
 
@@ -304,10 +296,13 @@ function previewParsedShooting() {
 }
 
 function importParsedShooting() {
+    try {
+    alert('importParsedShooting called');
     const text = document.getElementById('shootingParseText').value.trim();
     if (!text) { showToast('אין טקסט לפענוח'); return; }
 
     const records = _parseShootingMessages(text);
+    alert('records: ' + records.length);
     if (records.length === 0) { showToast('לא זוהו רשומות בהודעה'); return; }
 
     records.forEach(r => {
@@ -332,6 +327,7 @@ function importParsedShooting() {
     closeModal('shootingParseModal');
     renderShooting();
     showToast(`${records.length} רשומות ירי נוספו`);
+    } catch(e) { alert('ERROR: ' + e.message); }
 }
 
 function _stripQuotes(text) {
