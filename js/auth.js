@@ -37,10 +37,12 @@ async function handleLogin() {
 
     await loadState();
     initApp();
+    startSyncPolling();
     updateFeedbackFabVisibility();
 }
 
 async function handleLogout() {
+    stopSyncPolling();
     await fetch('/api/logout', { method: 'POST' });
     state.accessLevel = null;
     document.getElementById('mainApp').classList.add('hidden');

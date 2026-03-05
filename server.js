@@ -134,6 +134,14 @@ app.get('/api/session', (req, res) => {
     res.json({ accessLevel: req.session.accessLevel || null });
 });
 
+// --- Data version (incremented on every save, used for sync polling) ---
+let _dataVersion = 0;
+
+// GET /api/data/version - lightweight endpoint for polling
+app.get('/api/data/version', requireAuth, (req, res) => {
+    res.json({ version: _dataVersion });
+});
+
 // --- Data Routes ---
 
 // GET /api/data
@@ -147,7 +155,6 @@ app.get('/api/data', requireAuth, async (req, res) => {
                 doc = await col.findOne({ _id: 'app_state' });
             }
             const { _id, ...data } = doc;
-            console.log('[GET] shootingRecords:', (data.shootingRecords || []).length);
             res.json(data);
         } else {
             if (!fs.existsSync(DATA_FILE)) {
@@ -178,14 +185,14 @@ app.post('/api/data', requireAuth, requireAdmin, async (req, res) => {
             snapshots: snapshots || []
         };
 
-        console.log('[POST] shootingRecords:', (data.shootingRecords || []).length);
         if (db) {
             const col = getCollection();
             await col.replaceOne({ _id: 'app_state' }, { _id: 'app_state', ...data }, { upsert: true });
         } else {
             fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
         }
-        res.json({ ok: true });
+        _dataVersion++;
+        res.json({ ok: true, version: _dataVersion });
     } catch (err) {
         console.error('Error saving data:', err);
         res.status(500).json({ error: 'Failed to save data' });

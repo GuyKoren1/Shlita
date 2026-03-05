@@ -134,6 +134,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             await loadState();
             initApp();
+            startSyncPolling();
             updateFeedbackFabVisibility();
         }
     } catch (err) {

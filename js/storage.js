@@ -11,7 +11,6 @@ async function loadState() {
             state.cameras = data.cameras || [];
             state.faultRecords = data.faultRecords || [];
             state.shootingRecords = data.shootingRecords || [];
-            console.log('[loadState] shootingRecords from server:', state.shootingRecords.length);
             state.report1 = data.report1 || { startDate: null, entries: {}, excluded: [] };
             state.snapshots = data.snapshots || [];
             return;
@@ -130,7 +129,6 @@ function _buildPayload() {
 
 async function _saveStateNow() {
     const payload = _buildPayload();
-    console.log('[saveStateNow] shootingRecords in payload:', (payload.shootingRecords || []).length);
     try {
         const res = await fetch('/api/data', {
             method: 'POST',
@@ -138,6 +136,8 @@ async function _saveStateNow() {
             body: JSON.stringify(payload)
         });
         if (!res.ok) throw new Error('Save failed');
+        const result = await res.json();
+        if (result.version) _knownVersion = result.version;
         _lastSaveOk = true;
         _lastSaveTime = new Date();
         _hasPendingChanges = false;
@@ -174,6 +174,38 @@ function _updateSaveStatus() {
         el.className = 'save-status ok';
         el.innerHTML = '<span class="save-dot"></span> נשמר ' + _formatSaveTime(_lastSaveTime);
     }
+}
+
+// ==================== Sync Polling ====================
+let _knownVersion = 0;
+let _syncInterval = null;
+let _isSyncing = false;
+
+function startSyncPolling() {
+    if (_syncInterval) return;
+    _syncInterval = setInterval(_pollForChanges, 15000);
+}
+
+function stopSyncPolling() {
+    if (_syncInterval) { clearInterval(_syncInterval); _syncInterval = null; }
+}
+
+async function _pollForChanges() {
+    if (_hasPendingChanges || _isSyncing || !state.accessLevel) return;
+    try {
+        const res = await fetch('/api/data/version');
+        if (!res.ok) return;
+        const { version } = await res.json();
+        if (version > _knownVersion && _knownVersion > 0) {
+            _isSyncing = true;
+            await loadState();
+            _knownVersion = version;
+            _refreshAllViews();
+            _isSyncing = false;
+        } else if (_knownVersion === 0) {
+            _knownVersion = version;
+        }
+    } catch (e) { /* ignore network errors */ }
 }
 
 function loadInitialData() {
