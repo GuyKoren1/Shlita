@@ -63,6 +63,10 @@
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                     <span>תקלות כלים</span>
                 </li>
+                <li class="nav-item" data-view="shooting" onclick="switchView('shooting')" role="button" tabindex="0">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/></svg>
+                    <span>מעקב ירי</span>
+                </li>
                 <li class="nav-item" data-view="report1" onclick="switchView('report1')" role="button" tabindex="0">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                     <span>דוח נוכחות</span>
@@ -249,6 +253,37 @@
                     </select>
                 </div>
                 <div id="faultTrackingList"></div>
+            </div>
+
+            <!-- Shooting View -->
+            <div id="shootingView" class="view">
+                <div class="view-header">
+                    <h2>מעקב ירי</h2>
+                    <div class="view-actions">
+                        <button class="btn btn-secondary" onclick="exportShootingXLSX()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            ייצוא XLSX
+                        </button>
+                        <button class="btn btn-secondary" onclick="openParseShootingModal()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            שליפה מהודעה
+                        </button>
+                        <button class="btn btn-primary" onclick="openAddShootingModal()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            הוסף רשומה
+                        </button>
+                    </div>
+                </div>
+                <div class="fault-filters-bar">
+                    <input type="text" id="shootingSearchInput" placeholder="חיפוש..." oninput="renderShooting()">
+                    <select id="shootingCommanderFilter" onchange="renderShooting()">
+                        <option value="">כל המפק"צים</option>
+                    </select>
+                    <select id="shootingVehicleFilter" onchange="renderShooting()">
+                        <option value="">כל הכלים</option>
+                    </select>
+                </div>
+                <div id="shootingList"></div>
             </div>
 
             <!-- Report1 View -->
@@ -742,6 +777,117 @@
         </div>
     </div>
 
+    <!-- Modal: Add/Edit Shooting Record -->
+    <div id="shootingModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="shootingModalTitle">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="shootingModalTitle">הוסף רשומת ירי</h3>
+                <button class="modal-close" aria-label="סגור" onclick="closeModal('shootingModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="shootingCommanderInput">מפק"צ</label>
+                        <input type="text" id="shootingCommanderInput" placeholder="שם מפק״צ">
+                    </div>
+                    <div class="form-group">
+                        <label for="shootingGunnerInput">תותחן</label>
+                        <input type="text" id="shootingGunnerInput" placeholder="שם תותחן">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="shootingVehicleInput">כלי</label>
+                        <input type="text" id="shootingVehicleInput" placeholder="מספר כלי">
+                    </div>
+                    <div class="form-group">
+                        <label for="shootingDateInput">תאריך</label>
+                        <input type="date" id="shootingDateInput">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="shootingFrameworkInput">מסגרת</label>
+                    <input type="text" id="shootingFrameworkInput" placeholder="מסגרת הירי">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="shootingVehicleLocationInput">מיקום כלי</label>
+                        <input type="text" id="shootingVehicleLocationInput" placeholder="מיקום כלי">
+                    </div>
+                    <div class="form-group">
+                        <label for="shootingTargetLocationInput">מיקום מטרה</label>
+                        <input type="text" id="shootingTargetLocationInput" placeholder="מיקום מטרה">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="shootingTargetTypeInput">סוג מטרה</label>
+                        <input type="text" id="shootingTargetTypeInput" placeholder="סוג מטרה">
+                    </div>
+                    <div class="form-group">
+                        <label for="shootingTargetDescInput">תיאור מטרה</label>
+                        <input type="text" id="shootingTargetDescInput" placeholder="תיאור מטרה כללי">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="shootingShellTypeInput">סוג פגז</label>
+                        <input type="text" id="shootingShellTypeInput" placeholder="סוג פגז">
+                    </div>
+                    <div class="form-group">
+                        <label for="shootingQuantityInput">כמות</label>
+                        <input type="number" id="shootingQuantityInput" placeholder="כמות" min="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="shootingRangeInput">טווח</label>
+                    <input type="text" id="shootingRangeInput" placeholder="טווח (מטרים)">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('shootingModal')">ביטול</button>
+                <button class="btn btn-primary" onclick="saveShootingRecord()">שמור</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Shooting Detail -->
+    <div id="shootingDetailModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="shootingDetailModalTitle">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="shootingDetailModalTitle">פרטי ירי</h3>
+                <button class="modal-close" aria-label="סגור" onclick="closeModal('shootingDetailModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="fault-detail-grid" id="shootingDetailContent"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('shootingDetailModal')">סגור</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Parse Shooting from Message -->
+    <div id="shootingParseModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="shootingParseModalTitle">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <h3 id="shootingParseModalTitle">שליפה מהודעה</h3>
+                <button class="modal-close" aria-label="סגור" onclick="closeModal('shootingParseModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="shootingParseText">הדבק הודעת ירי (ניתן להדביק מספר הודעות)</label>
+                    <textarea id="shootingParseText" rows="10" placeholder="מפק&quot;צ: &#10;תותחן: &#10;כלי: &#10;תאריך: &#10;מסגרת: &#10;מיקום כלי: &#10;מיקום מטרה: &#10;סוג מטרה: &#10;תיאור מטרה כללי: &#10;סוג פגז: &#10;כמות: &#10;טווח:" oninput="previewParsedShooting()"></textarea>
+                </div>
+                <div id="shootingParsePreview"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('shootingParseModal')">ביטול</button>
+                <button class="btn btn-primary" onclick="importParsedShooting()">ייבוא</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Feedback FAB -->
     <div id="feedbackFab" class="feedback-fab hidden">
         <div id="feedbackMenu" class="feedback-fab-menu">
@@ -825,6 +971,7 @@
     <script defer src="js/cameras.js"></script>
     <script defer src="js/export-import.js"></script>
     <script defer src="js/fault-tracking.js"></script>
+    <script defer src="js/shooting.js"></script>
     <script defer src="js/feedback.js"></script>
     <script defer src="js/report1.js"></script>
     <script defer src="js/app.js"></script>

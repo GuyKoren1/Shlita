@@ -10,6 +10,7 @@ async function loadState() {
             state.columnConfig = data.columnConfig || null;
             state.cameras = data.cameras || [];
             state.faultRecords = data.faultRecords || [];
+            state.shootingRecords = data.shootingRecords || [];
             state.report1 = data.report1 || { startDate: null, entries: {}, excluded: [] };
             state.snapshots = data.snapshots || [];
             return;
@@ -27,6 +28,7 @@ async function loadState() {
         state.columnConfig = parsed.columnConfig || null;
         state.cameras = parsed.cameras || [];
         state.faultRecords = parsed.faultRecords || [];
+        state.shootingRecords = parsed.shootingRecords || [];
         state.report1 = parsed.report1 || { startDate: null, entries: {}, excluded: [] };
         state.snapshots = parsed.snapshots || [];
     }
@@ -96,6 +98,7 @@ function _applyPayload(data) {
     state.columnConfig = data.columnConfig || null;
     state.cameras = data.cameras || [];
     state.faultRecords = data.faultRecords || [];
+    state.shootingRecords = data.shootingRecords || [];
     state.report1 = data.report1 || { startDate: null, entries: {}, excluded: [] };
     state.snapshots = data.snapshots || [];
 }
@@ -106,6 +109,7 @@ function _refreshAllViews() {
     renderActivities();
     renderCameras();
     renderFaultTracking();
+    renderShooting();
     renderSnapshotSelector();
 }
 
@@ -117,6 +121,7 @@ function _buildPayload() {
         columnConfig: state.columnConfig,
         cameras: state.cameras,
         faultRecords: state.faultRecords,
+        shootingRecords: state.shootingRecords,
         report1: state.report1,
         snapshots: state.snapshots
     };

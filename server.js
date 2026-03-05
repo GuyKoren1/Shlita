@@ -164,7 +164,7 @@ app.get('/api/data', requireAuth, async (req, res) => {
 // POST /api/data
 app.post('/api/data', requireAuth, requireAdmin, async (req, res) => {
     try {
-        const { personnel, customColumns, activities, columnConfig, cameras, faultRecords, report1, snapshots } = req.body;
+        const { personnel, customColumns, activities, columnConfig, cameras, faultRecords, shootingRecords, report1, snapshots } = req.body;
         const data = {
             personnel: personnel || [],
             customColumns: customColumns || [],
@@ -172,6 +172,7 @@ app.post('/api/data', requireAuth, requireAdmin, async (req, res) => {
             columnConfig: columnConfig || null,
             cameras: cameras || [],
             faultRecords: faultRecords || [],
+            shootingRecords: shootingRecords || [],
             report1: report1 || { startDate: null, entries: {}, excluded: [] },
             snapshots: snapshots || []
         };
