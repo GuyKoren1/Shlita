@@ -147,6 +147,7 @@ app.get('/api/data', requireAuth, async (req, res) => {
                 doc = await col.findOne({ _id: 'app_state' });
             }
             const { _id, ...data } = doc;
+            console.log('[GET] shootingRecords:', (data.shootingRecords || []).length);
             res.json(data);
         } else {
             if (!fs.existsSync(DATA_FILE)) {
@@ -177,6 +178,7 @@ app.post('/api/data', requireAuth, requireAdmin, async (req, res) => {
             snapshots: snapshots || []
         };
 
+        console.log('[POST] shootingRecords:', (data.shootingRecords || []).length);
         if (db) {
             const col = getCollection();
             await col.replaceOne({ _id: 'app_state' }, { _id: 'app_state', ...data }, { upsert: true });

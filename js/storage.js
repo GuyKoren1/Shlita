@@ -11,6 +11,7 @@ async function loadState() {
             state.cameras = data.cameras || [];
             state.faultRecords = data.faultRecords || [];
             state.shootingRecords = data.shootingRecords || [];
+            console.log('[loadState] shootingRecords from server:', state.shootingRecords.length);
             state.report1 = data.report1 || { startDate: null, entries: {}, excluded: [] };
             state.snapshots = data.snapshots || [];
             return;
@@ -129,6 +130,7 @@ function _buildPayload() {
 
 async function _saveStateNow() {
     const payload = _buildPayload();
+    console.log('[saveStateNow] shootingRecords in payload:', (payload.shootingRecords || []).length);
     try {
         const res = await fetch('/api/data', {
             method: 'POST',
