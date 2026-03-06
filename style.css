@@ -297,6 +297,36 @@ body {
     gap: 6px;
 }
 
+.backup-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.btn-backup {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px 8px;
+    font-size: 12px;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.btn-backup:hover {
+    background: var(--hover);
+    border-color: var(--accent);
+}
+
+.btn-backup:active {
+    transform: scale(0.97);
+}
+
 /* Save Status Indicator */
 .save-status {
     display: flex;

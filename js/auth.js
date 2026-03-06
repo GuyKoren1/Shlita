@@ -35,6 +35,9 @@ async function handleLogin() {
         badge.className = 'access-badge viewer';
     }
 
+    const backupEl = document.getElementById('backupActions');
+    if (backupEl) backupEl.style.display = state.accessLevel === 'admin' ? '' : 'none';
+
     await loadState();
     initApp();
     startSyncPolling();
@@ -50,4 +53,6 @@ async function handleLogout() {
     document.getElementById('passwordInput').value = '';
     document.getElementById('loginError').textContent = '';
     updateFeedbackFabVisibility();
+    const backupEl = document.getElementById('backupActions');
+    if (backupEl) backupEl.style.display = 'none';
 }

@@ -256,6 +256,57 @@ async function _pollForChanges() {
     } catch (e) { /* ignore network errors */ }
 }
 
+// ==================== Local Backup Download/Upload ====================
+async function downloadBackup() {
+    try {
+        const res = await fetch('/api/backup/download');
+        if (!res.ok) throw new Error('Download failed');
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const disposition = res.headers.get('Content-Disposition');
+        const match = disposition && disposition.match(/filename="(.+)"/);
+        a.download = match ? match[1] : 'shlita-backup.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('גיבוי הורד בהצלחה');
+    } catch (err) {
+        console.error('Backup download failed:', err);
+        showToast('שגיאה בהורדת גיבוי');
+    }
+}
+
+async function uploadBackup(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    event.target.value = '';
+    if (!confirm('שחזור מגיבוי יחליף את כל הנתונים הנוכחיים. להמשיך?')) return;
+    try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        const res = await fetch('/api/backup/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error || 'Upload failed');
+        }
+        const result = await res.json();
+        if (result.version) _knownVersion = result.version;
+        await loadState();
+        _refreshAllViews();
+        showToast('שוחזר מגיבוי בהצלחה');
+    } catch (err) {
+        console.error('Backup upload failed:', err);
+        showToast('שגיאה בשחזור מגיבוי: ' + err.message);
+    }
+}
+
 function loadInitialData() {
     // Load cameras if empty
     if (state.cameras.length === 0) {

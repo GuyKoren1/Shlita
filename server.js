@@ -328,6 +328,70 @@ app.post('/api/backups/:id/restore', requireAuth, requireAdmin, async (req, res)
     }
 });
 
+// GET /api/backup/download - download full DB as JSON file (admin only)
+app.get('/api/backup/download', requireAuth, requireAdmin, async (req, res) => {
+    try {
+        let data;
+        if (db) {
+            const col = getCollection();
+            const doc = await col.findOne({ _id: 'app_state' });
+            if (!doc) return res.status(404).json({ error: 'No data found' });
+            const { _id, ...rest } = doc;
+            data = rest;
+        } else {
+            if (!fs.existsSync(DATA_FILE)) return res.status(404).json({ error: 'No data found' });
+            data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+        }
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Disposition', `attachment; filename="shlita-backup-${timestamp}.json"`);
+        res.json(data);
+    } catch (err) {
+        console.error('Error downloading backup:', err);
+        res.status(500).json({ error: 'Failed to download backup' });
+    }
+});
+
+// POST /api/backup/upload - restore from uploaded JSON file (admin only)
+app.post('/api/backup/upload', requireAuth, requireAdmin, async (req, res) => {
+    try {
+        const data = req.body;
+        // Validate that the uploaded data has expected structure
+        if (!data || typeof data !== 'object') {
+            return res.status(400).json({ error: 'Invalid backup file' });
+        }
+        const requiredKeys = ['personnel', 'activities'];
+        const hasValidStructure = requiredKeys.some(key => Array.isArray(data[key]));
+        if (!hasValidStructure) {
+            return res.status(400).json({ error: 'Invalid backup format - missing expected data fields' });
+        }
+        // Backup current state before restoring
+        await createBackup('before-upload-restore');
+        const cleaned = {
+            personnel: data.personnel || [],
+            customColumns: data.customColumns || [],
+            activities: data.activities || [],
+            columnConfig: data.columnConfig || null,
+            cameras: data.cameras || [],
+            faultRecords: data.faultRecords || [],
+            shootingRecords: data.shootingRecords || [],
+            report1: data.report1 || { startDate: null, entries: {}, excluded: [] },
+            snapshots: data.snapshots || []
+        };
+        if (db) {
+            const col = getCollection();
+            await col.replaceOne({ _id: 'app_state' }, { _id: 'app_state', ...cleaned }, { upsert: true });
+        } else {
+            fs.writeFileSync(DATA_FILE, JSON.stringify(cleaned, null, 2), 'utf8');
+        }
+        _dataVersion++;
+        res.json({ ok: true, version: _dataVersion });
+    } catch (err) {
+        console.error('Error uploading backup:', err);
+        res.status(500).json({ error: 'Failed to restore from backup' });
+    }
+});
+
 // --- Feedback Routes (MongoDB with file-based fallback) ---
 
 function getFeedbackCollection() {
