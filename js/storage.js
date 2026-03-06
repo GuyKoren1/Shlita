@@ -128,8 +128,24 @@ function _buildPayload() {
 }
 
 async function _saveStateNow() {
-    const payload = _buildPayload();
     try {
+        // Before saving, check if server has newer version — merge if needed
+        if (_knownVersion > 0) {
+            const verRes = await fetch('/api/data/version');
+            if (verRes.ok) {
+                const { version } = await verRes.json();
+                if (version > _knownVersion) {
+                    // Server has newer data — merge it before saving
+                    const dataRes = await fetch('/api/data');
+                    if (dataRes.ok) {
+                        const serverData = await dataRes.json();
+                        _mergeServerData(serverData);
+                        _knownVersion = version;
+                    }
+                }
+            }
+        }
+        const payload = _buildPayload();
         const res = await fetch('/api/data', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -143,11 +159,43 @@ async function _saveStateNow() {
         _hasPendingChanges = false;
     } catch (err) {
         console.warn('Server save failed, falling back to localStorage:', err);
+        const payload = _buildPayload();
         localStorage.setItem('shlita_data', JSON.stringify(payload));
         _lastSaveOk = false;
         _hasPendingChanges = false;
     }
     _updateSaveStatus();
+}
+
+// Merge server data into local state — keep items that exist on server but not locally
+function _mergeServerData(serverData) {
+    const collections = ['activities', 'faultRecords', 'shootingRecords', 'cameras', 'snapshots'];
+    for (const key of collections) {
+        const serverItems = serverData[key] || [];
+        const localItems = state[key] || [];
+        const localIds = new Set(localItems.map(i => i.id));
+        // Add server-only items that don't exist locally (were added by another source)
+        for (const item of serverItems) {
+            if (item.id && !localIds.has(item.id)) {
+                localItems.push(item);
+            }
+        }
+        state[key] = localItems;
+    }
+    // For report1, merge entries (don't overwrite)
+    if (serverData.report1 && serverData.report1.entries) {
+        if (!state.report1) state.report1 = { startDate: null, entries: {}, excluded: [] };
+        if (!state.report1.entries) state.report1.entries = {};
+        for (const [personId, dates] of Object.entries(serverData.report1.entries)) {
+            if (!state.report1.entries[personId]) {
+                state.report1.entries[personId] = dates;
+            }
+        }
+        // Use earliest startDate
+        if (serverData.report1.startDate && (!state.report1.startDate || serverData.report1.startDate < state.report1.startDate)) {
+            state.report1.startDate = serverData.report1.startDate;
+        }
+    }
 }
 
 function retrySave() {
