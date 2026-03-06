@@ -132,6 +132,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 badge.className = 'access-badge viewer';
             }
 
+            const backupEl = document.getElementById('backupActions');
+            if (backupEl) backupEl.style.display = accessLevel === 'admin' ? '' : 'none';
+
             await loadState();
             initApp();
             startSyncPolling();
