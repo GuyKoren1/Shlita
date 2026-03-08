@@ -23,6 +23,9 @@ else
     fi
 fi
 
+# Write build version (date+time)
+date "+%d/%m/%Y %H:%M" > build-version.txt
+
 # Stage all, commit, push
 git add -A
 git commit -m "$MSG"

@@ -108,8 +108,16 @@ function toggleSidebar() {
 })();
 
 // ==================== Initialize ====================
+function loadBuildVersion() {
+    fetch('/build-version.txt?' + Date.now()).then(r => r.ok ? r.text() : '').then(v => {
+        const el = document.getElementById('buildVersion');
+        if (el && v.trim()) el.textContent = 'עדכון: ' + v.trim();
+    }).catch(() => {});
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     initTheme();
+    loadBuildVersion();
     document.getElementById('passwordInput').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') handleLogin();
     });
