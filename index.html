@@ -310,6 +310,8 @@
                     <div class="report1-date-row">
                         <label for="report1StartDate">תאריך התחלה:</label>
                         <input type="date" id="report1StartDate" onchange="setReport1StartDate(this.value)">
+                        <button class="btn btn-secondary" onclick="document.getElementById('r1ImportFile').click()" id="r1ImportBtn" style="display:none">ייבוא מאקסל</button>
+                        <input type="file" id="r1ImportFile" accept=".xlsx,.xls" style="display:none" onchange="importReport1FromExcel(event)">
                     </div>
                     <div class="table-container">
                         <table class="report1-table" id="report1EntryTable">

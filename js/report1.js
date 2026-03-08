@@ -66,6 +66,10 @@ function renderReport1Entry() {
         datePicker.disabled = !isAdmin;
     }
 
+    // Show/hide import button for admins
+    const importBtn = document.getElementById('r1ImportBtn');
+    if (importBtn) importBtn.style.display = isAdmin ? '' : 'none';
+
     const head = document.getElementById('report1EntryHead');
     const body = document.getElementById('report1EntryBody');
 
@@ -294,4 +298,138 @@ function _renderReport1Summary() {
 
 function filterReport1View() {
     _renderReport1Summary();
+}
+
+// ==================== Report 1 - Excel Import ====================
+function importReport1FromExcel(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    event.target.value = ''; // reset so same file can be re-imported
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+
+            // Find the 'שליטה' sheet
+            const sheetName = workbook.SheetNames.find(n => n.trim() === 'שליטה');
+            if (!sheetName) {
+                showToast('לא נמצאה לשונית בשם "שליטה" בקובץ');
+                return;
+            }
+
+            const sheet = workbook.Sheets[sheetName];
+            const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+            if (rows.length < 2) {
+                showToast('הלשונית ריקה או שאין בה שורות נתונים');
+                return;
+            }
+
+            // Row 0 = header: col A = name, col D onwards = dates
+            const headerRow = rows[0];
+            const config = getColumnConfig();
+            const primaryCol = config.find(c => c.isPrimary) || config[0];
+
+            // Parse dates from header (column D = index 3 onwards)
+            const dateColumns = []; // [{index, dateStr}]
+            for (let i = 3; i < headerRow.length; i++) {
+                const cellVal = headerRow[i];
+                const dateStr = _parseExcelDate(cellVal);
+                if (dateStr) {
+                    dateColumns.push({ index: i, dateStr });
+                }
+            }
+
+            if (dateColumns.length === 0) {
+                showToast('לא נמצאו תאריכים בשורת הכותרת (מעמודה D)');
+                return;
+            }
+
+            // Build a name-to-person lookup (normalize whitespace)
+            const personByName = {};
+            state.personnel.forEach(p => {
+                const name = (p[primaryCol.key] || p.name || '').trim();
+                if (name) personByName[name] = p;
+            });
+
+            let matched = 0, unmatched = 0;
+            const unmatchedNames = [];
+
+            for (let r = 1; r < rows.length; r++) {
+                const row = rows[r];
+                const rawName = String(row[0] || '').trim();
+                if (!rawName) continue;
+
+                const person = personByName[rawName];
+                if (!person) {
+                    unmatched++;
+                    unmatchedNames.push(rawName);
+                    continue;
+                }
+
+                if (!state.report1.entries[person.id]) {
+                    state.report1.entries[person.id] = {};
+                }
+
+                dateColumns.forEach(({ index, dateStr }) => {
+                    const cellVal = row[index];
+                    const num = Number(cellVal);
+                    if (cellVal === '' || cellVal == null || isNaN(num)) return;
+                    if (num === 1) {
+                        state.report1.entries[person.id][dateStr] = 'base';
+                    } else if (num === 0) {
+                        state.report1.entries[person.id][dateStr] = 'home';
+                    }
+                });
+                matched++;
+            }
+
+            // Auto-set start date if not set yet
+            if (!state.report1.startDate && dateColumns.length > 0) {
+                state.report1.startDate = dateColumns[0].dateStr;
+            }
+
+            saveState();
+            renderReport1Entry();
+
+            let msg = `יובאו נתונים עבור ${matched} אנשים`;
+            if (unmatched > 0) {
+                msg += ` (${unmatched} שמות לא נמצאו: ${unmatchedNames.slice(0, 5).join(', ')}${unmatched > 5 ? '...' : ''})`;
+            }
+            showToast(msg);
+
+        } catch (err) {
+            console.error('Report1 import error:', err);
+            showToast('שגיאה בקריאת הקובץ');
+        }
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function _parseExcelDate(val) {
+    // Handle Excel serial date numbers
+    if (typeof val === 'number' && val > 40000 && val < 60000) {
+        const epoch = new Date(1899, 11, 30);
+        const d = new Date(epoch.getTime() + val * 86400000);
+        return _toLocalDateStr(d);
+    }
+    // Handle string dates
+    if (typeof val === 'string') {
+        const trimmed = val.trim();
+        // Try ISO format (YYYY-MM-DD)
+        if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+        // Try DD/MM/YYYY or D/M/YYYY
+        const slashMatch = trimmed.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
+        if (slashMatch) {
+            const day = slashMatch[1].padStart(2, '0');
+            const month = slashMatch[2].padStart(2, '0');
+            return `${slashMatch[3]}-${month}-${day}`;
+        }
+    }
+    // Handle Date objects (SheetJS may return them)
+    if (val instanceof Date && !isNaN(val)) {
+        return _toLocalDateStr(val);
+    }
+    return null;
 }
