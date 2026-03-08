@@ -321,20 +321,20 @@ function importReport1FromExcel(event) {
 
             const sheet = workbook.Sheets[sheetName];
             const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-            if (rows.length < 2) {
-                showToast('הלשונית ריקה או שאין בה שורות נתונים');
+            if (rows.length < 3) {
+                showToast('הלשונית ריקה או שאין בה מספיק שורות');
                 return;
             }
 
-            // Row 0 = header: col A = name, col D onwards = dates
-            const headerRow = rows[0];
+            // Row 0 = day names (שבת, ראשון...), Row 1 = שם, צוות, _, dates..., Data from row 2
+            const dateRow = rows[1];
             const config = getColumnConfig();
             const primaryCol = config.find(c => c.isPrimary) || config[0];
 
-            // Parse dates from header (column D = index 3 onwards)
+            // Parse dates from row 1 (column D = index 3 onwards)
             const dateColumns = []; // [{index, dateStr}]
-            for (let i = 3; i < headerRow.length; i++) {
-                const cellVal = headerRow[i];
+            for (let i = 3; i < dateRow.length; i++) {
+                const cellVal = dateRow[i];
                 const dateStr = _parseExcelDate(cellVal);
                 if (dateStr) {
                     dateColumns.push({ index: i, dateStr });
@@ -342,7 +342,7 @@ function importReport1FromExcel(event) {
             }
 
             if (dateColumns.length === 0) {
-                showToast('לא נמצאו תאריכים בשורת הכותרת (מעמודה D)');
+                showToast('לא נמצאו תאריכים בשורה השנייה (מעמודה D)');
                 return;
             }
 
@@ -356,7 +356,7 @@ function importReport1FromExcel(event) {
             let matched = 0, unmatched = 0;
             const unmatchedNames = [];
 
-            for (let r = 1; r < rows.length; r++) {
+            for (let r = 2; r < rows.length; r++) {
                 const row = rows[r];
                 const rawName = String(row[0] || '').trim();
                 if (!rawName) continue;
