@@ -109,9 +109,9 @@ function toggleSidebar() {
 
 // ==================== Initialize ====================
 function loadBuildVersion() {
-    fetch('/build-version.txt?' + Date.now()).then(r => r.ok ? r.text() : '').then(v => {
+    fetch('/api/version').then(r => r.json()).then(data => {
         const el = document.getElementById('buildVersion');
-        if (el && v.trim()) el.textContent = 'עדכון: ' + v.trim();
+        if (el && data.version) el.textContent = 'עדכון: ' + data.version;
     }).catch(() => {});
 }
 

@@ -475,6 +475,16 @@ app.get('/api/health', (req, res) => {
     res.json({ ok: true });
 });
 
+// Build version endpoint
+app.get('/api/version', (req, res) => {
+    try {
+        const version = require('fs').readFileSync(path.join(__dirname, 'build-version.txt'), 'utf8').trim();
+        res.json({ version });
+    } catch {
+        res.json({ version: null });
+    }
+});
+
 // Serve index.html for all other routes
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));

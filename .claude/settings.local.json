@@ -5,7 +5,8 @@
       "WebFetch(domain:cdnjs.cloudflare.com)",
       "WebFetch(domain:cdn.jsdelivr.net)",
       "WebFetch(domain:fonts.gstatic.com)",
-      "WebFetch(domain:gwfh.mranftl.com)"
+      "WebFetch(domain:gwfh.mranftl.com)",
+      "WebFetch(domain:shlita-91db.onrender.com)"
     ]
   }
 }
